@@ -33,5 +33,6 @@ Read `00-cheat-sheet.md` first, then only the files the task needs.
 | 26-rest-services.md | REST enablement and generation |
 | 28-extending-kernel-function.md | Adding to an Oracle function in CUSTOM: delta merge rules, ODT save errors, cloning slot N, custom 1:1 table, backend impact analysis, hook layering (field-tested on IFDATMMN) |
 | 27-radxml-format.md | Verified radxml XML format, ODT load checks, generated PL/SQL names (not in the guides) |
+| 29-lessons-learned.md | **Always** before delivering, and first whenever the user reports an ODT, compile, deploy or test error: known symptoms, causes, fixes, and how to record a new lesson |
 
 Note: the guides do NOT document the radxml XML schema, exact PL/SQL hook signatures, or INC column lists. File 27 records them as verified on 14.7.0.6.0; for other versions prefer the user's own files.

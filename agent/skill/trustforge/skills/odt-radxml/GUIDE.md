@@ -5,6 +5,8 @@ description: Design, edit and review FLEXCUBE ODT radxml (<FUNCTION_ID>_RAD.xml)
 
 # Radxml design, edit and review
 
+> **Lessons first:** before delivering, and first whenever the user reports an ODT save, compile, deploy or test error, read `../../reference/29-lessons-learned.md`; when a new root cause is confirmed, record it as that file describes (automatically).
+
 Reference: `../../reference/04-screen-development-core.md` (primary), plus the category file (13 maintenance, 14 online, 15 call form, 16 launch/others, 17 report, 18 dashboard, 12 child/screen child, 22 LOV high volume, 23 upload).
 
 ## A. Designing (new screen or new elements)

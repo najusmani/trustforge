@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { type JobType, jobFiles, jobs } from "@/db/schema";
-import { anthropic, getAgentSetup } from "@/lib/agent";
+import { anthropic, ensureAgentsCurrent } from "@/lib/agent";
 import {
   checkUploads,
   deleteAnthropicFiles,
@@ -52,7 +52,7 @@ export async function createJob(formData: FormData) {
   const left = await questionsLeft(m.team.id, plan);
   if (left !== null && left <= 0) fail(NEW, limitMessage());
 
-  const setup = await getAgentSetup();
+  const setup = await ensureAgentsCurrent();
   const agentId = plan === "partner" ? setup.agentPartnerId : setup.agentFreeId;
   if (!agentId || !setup.environmentId) fail(NEW, "TrustForge isn’t switched on yet. Please try again later.");
 

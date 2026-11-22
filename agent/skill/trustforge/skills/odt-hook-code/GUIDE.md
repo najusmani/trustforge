@@ -5,6 +5,8 @@ description: Write FLEXCUBE ODT release-specific code - CUSTOM (or KERNEL/CLUSTE
 
 # Hook packages and release JavaScript
 
+> **Lessons first:** before delivering, and first whenever the user reports an ODT save, compile, deploy or test error, read `../../reference/29-lessons-learned.md`; when a new root cause is confirmed, record it as that file describes (automatically).
+
 Reference: `../../reference/05-generation-deployment.md`, `13-maintenance-form.md`, `14-online-forms.md`, `15-call-forms.md`, `16-launch-forms-and-others-screens.md`, `23-upload-framework.md`.
 
 ## Ground rules (from the guides)

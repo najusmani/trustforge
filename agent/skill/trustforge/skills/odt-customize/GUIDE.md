@@ -7,7 +7,7 @@ description: Main entry point for Oracle FLEXCUBE UBS ODT / RAD Tool / Developme
 
 You act as a FLEXCUBE ODT developer. The user gives you existing objects plus a requirement; you deliver the customized artifacts and exact instructions to finish them in ODT.
 
-Knowledge base: `../../reference/` (relative to this skill folder). Always read `../../reference/00-cheat-sheet.md`, then the files `../../reference/INDEX.md` points to for the task. Follow the guides' rules; when a rule comes from the docs, keep it, and when something is NOT in the docs (radxml XML schema, exact hook signatures, INC column lists, error-code conventions), take it from the user's own files and say so.
+Knowledge base: `../../reference/` (relative to this skill folder). Always read `../../reference/00-cheat-sheet.md` and `../../reference/29-lessons-learned.md` (problems already met in real deployments), then the files `../../reference/INDEX.md` points to for the task. Follow the guides' rules; when a rule comes from the docs, keep it, and when something is NOT in the docs (radxml XML schema, exact hook signatures, INC column lists, error-code conventions), take it from the user's own files and say so.
 
 Default layer: **CUSTOM** (unless the user states KERNEL or CLUSTER, or the radxml shows another release type).
 
@@ -95,7 +95,32 @@ Run the review checklist in `../odt-radxml/GUIDE.md` against the customized radx
 Write `output/CHANGES.md` (start from `templates/CHANGES.md`) with:
 1. Files delivered and what each does.
 2. Deployment order: DDL -> load radxml in ODT (Function Generation, CUSTOM release, Action = Load), Save -> Generate (list the exact units to tick; for a new maintenance function see reference 27) -> Deploy front-end (UIXML, SYS js, CUSTOM js) -> compile DB units (MAIN spc/sql, CUSTOM spc/sql, INCs incl. labels/menu/LOV/amend/summary) -> manual scripts.
+   Include the step "run `check_odt_zip.py` on the generated zip; deploy only with 0 errors" right after Generate.
 3. Unit test cases per requirement (action, input, expected result), including negative cases.
 4. Assumptions and open points.
 
 Then reply to the user with a short summary and the path to `output/`.
+
+## Step 8 - After ODT generation: check the zip (every time)
+
+When the user has generated in ODT and gives you the zip (`<FID>_RAD.ZIP`), or says they generated, before anything is
+compiled or deployed run:
+
+```
+python3 -I scripts/check_odt_zip.py <FID>_RAD.ZIP --custom-body output/db/packages/<mod>pks_<fid>_custom.sql
+```
+
+- Errors: tell the user exactly which units to tick and regenerate (the message says which); do not give deploy steps
+  until a re-run shows 0 errors. Warnings: explain each in one line.
+- Keep the ODT-saved radxml from the zip as the new master copy (odt-radxml section C).
+- If the user hasn't shared the zip, ask for it once: "Upload the generated zip so I can check it before you deploy."
+
+## Step 9 - When the user reports an error (compile, deploy, test, runtime)
+
+1. Read `../../reference/29-lessons-learned.md` and search it for the error code / log text. A match gives the cause
+   and fix; apply it and say which lesson it is.
+2. Otherwise diagnose from evidence: the debug log, the generated zip (run `check_odt_zip.py`), the radxml
+   (`../odt-radxml/scripts/check_radxml.py`), the packages. State the root cause with the file and line that prove it.
+3. Update the function's `output/CHANGES.md` (testing finding + fix).
+4. **Record the lesson automatically** as described at the end of `29-lessons-learned.md` (new lesson, a mechanical
+   check when possible, changelog line). Do this without being asked; it is how TrustForge improves.

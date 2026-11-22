@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import Anthropic, { toFile } from "@anthropic-ai/sdk";
@@ -25,6 +26,8 @@ const KEYS = {
   agentFree: "trustforge.agent_free_id",
   agentPartner: "trustforge.agent_partner_id",
   setupAt: "trustforge.setup_at",
+  skillHash: "trustforge.skill_hash",
+  specHash: "trustforge.spec_hash",
 } as const;
 
 async function getSetting(key: string): Promise<string | null> {
@@ -124,14 +127,34 @@ async function listFiles(dir: string): Promise<string[]> {
   return out;
 }
 
-async function skillUploadables() {
-  const files = await listFiles(SKILL_DIR);
-  return Promise.all(
-    files.map(async (full) => {
-      const rel = path.relative(path.dirname(SKILL_DIR), full).split(path.sep).join("/"); // "trustforge/..."
-      return toFile(await fs.readFile(full), rel);
-    }),
-  );
+/** The bundled skill files (path "trustforge/...", content), sorted so the fingerprint is stable. */
+async function readSkill(): Promise<{ rel: string; data: Buffer }[]> {
+  const files = (await listFiles(SKILL_DIR)).map((full) => ({
+    full,
+    rel: path.relative(path.dirname(SKILL_DIR), full).split(path.sep).join("/"),
+  }));
+  files.sort((a, b) => (a.rel < b.rel ? -1 : 1));
+  return Promise.all(files.map(async (f) => ({ rel: f.rel, data: await fs.readFile(f.full) })));
+}
+
+function sha256(parts: (string | Buffer)[]): string {
+  const h = createHash("sha256");
+  for (const p of parts) {
+    h.update(p);
+    h.update("\0");
+  }
+  return h.digest("hex");
+}
+
+let skillHashCache: string | null = null;
+async function skillHash(): Promise<string> {
+  skillHashCache ??= sha256((await readSkill()).flatMap((f) => [f.rel, f.data]));
+  return skillHashCache;
+}
+
+/** Fingerprint of both agent definitions (prompt, model, tools), independent of the skill id. */
+function specHash(): string {
+  return sha256((["free", "partner"] as const).map((p) => JSON.stringify(agentSpec(p, "SKILL"))));
 }
 
 /** Creates or updates the skill, environment and both agents. Safe to run again. */
@@ -140,7 +163,8 @@ export async function runAgentSetup(): Promise<string[]> {
   const log: string[] = [];
   const setup = await getAgentSetup();
 
-  const files = await skillUploadables();
+  const skill = await readSkill();
+  const files = await Promise.all(skill.map((f) => toFile(f.data, f.rel)));
   let skillId = setup.skillId;
   if (skillId) {
     await c.skills.versions.create(skillId, { files });
@@ -179,6 +203,56 @@ export async function runAgentSetup(): Promise<string[]> {
     }
   }
 
+  await setSetting(KEYS.skillHash, await skillHash());
+  await setSetting(KEYS.specHash, specHash());
   await setSetting(KEYS.setupAt, new Date().toISOString());
   return log;
+}
+
+/**
+ * Keeps the live skill and agents in step with the deployed code, with no manual step:
+ * called before every new job. Uploads a new skill version only when the bundled skill files changed
+ * (TrustForge plugin synced in by scripts/sync-skill.mjs), and updates the agents only when their
+ * definitions changed. Does nothing until the admin setup has run once. Never blocks a job on failure.
+ */
+let ensuring: Promise<void> | null = null;
+export async function ensureAgentsCurrent(): Promise<Awaited<ReturnType<typeof getAgentSetup>>> {
+  ensuring ??= (async () => {
+    try {
+      const setup = await getAgentSetup();
+      // First-time setup stays an explicit admin action (it creates resources in the Anthropic account);
+      // from then on everything is kept current here.
+      if (!setup.skillId || !setup.environmentId || !setup.agentFreeId || !setup.agentPartnerId) return;
+      const [liveSkill, liveSpec, wantSkill] = await Promise.all([
+        getSetting(KEYS.skillHash),
+        getSetting(KEYS.specHash),
+        skillHash(),
+      ]);
+      const wantSpec = specHash();
+      if (liveSkill === wantSkill && liveSpec === wantSpec) return;
+      const c = anthropic();
+      if (liveSkill !== wantSkill) {
+        const skill = await readSkill();
+        await c.skills.versions.create(setup.skillId, { files: await Promise.all(skill.map((f) => toFile(f.data, f.rel))) });
+        await setSetting(KEYS.skillHash, wantSkill);
+        console.log(`[agent] skill ${setup.skillId}: new version uploaded (${skill.length} files)`);
+      }
+      if (liveSpec !== wantSpec) {
+        for (const plan of ["free", "partner"] as const) {
+          const id = plan === "free" ? setup.agentFreeId : setup.agentPartnerId;
+          const current = await c.beta.agents.retrieve(id);
+          await c.beta.agents.update(id, { ...agentSpec(plan, setup.skillId), version: current.version });
+        }
+        await setSetting(KEYS.specHash, wantSpec);
+        console.log("[agent] agents updated to the deployed definitions");
+      }
+      await setSetting(KEYS.setupAt, new Date().toISOString());
+    } catch (e) {
+      console.error("[agent] automatic update failed; jobs keep the current version", e);
+    } finally {
+      ensuring = null;
+    }
+  })();
+  await ensuring;
+  return getAgentSetup();
 }

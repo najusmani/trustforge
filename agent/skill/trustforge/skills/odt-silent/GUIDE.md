@@ -5,6 +5,8 @@ description: Configure and run the FLEXCUBE Silent ODT utility (SilentOdt.proper
 
 # Silent ODT utility
 
+> **Lessons first:** before delivering, and first whenever the user reports an ODT save, compile, deploy or test error, read `../../reference/29-lessons-learned.md`; when a new root cause is confirmed, record it as that file describes (automatically).
+
 Reference: `../../reference/21-service-xml-silent-odt.md`, `26-rest-services.md`, `09-source-upgrade.md`, `08-bulk-generation.md`.
 
 ## Prerequisites to tell the user

@@ -26,6 +26,12 @@ Run from this folder with `python3 -I`:
 - `skills/odt-radxml/scripts/radxml_merge.py <file>` - merge KERNEL/CLUSTER/CUSTOM like ODT; proves a CUSTOM delta changes no kernel value
 - `skills/odt-radxml/scripts/gen_radxml.py <spec.json> <out.xml> [--release CODE]` - generate a NEW function's radxml from a JSON spec
 - `skills/odt-radxml/scripts/make_skeleton.py` - rebuild the tag skeleton from other ODT saves
+- `skills/odt-customize/scripts/check_odt_zip.py <FID>_RAD.ZIP [--custom-body <body.sql>]` - check an ODT-generated zip
+  before deploy (missing amendable/label/LOV/menu INCs, data sources, ODT's empty CUSTOM body stub)
+
+## Known problems first
+`reference/29-lessons-learned.md` lists problems already met in real deployments. Read it before delivering, and
+search it first whenever the user reports an error (an error code such as `ST-AMND-002`, a log, a failed compile).
 
 ## Hosted-workspace conventions (these override the guides' file locations)
 - The user's files are mounted read-only under `/mnt/session/uploads/`.
@@ -34,3 +40,8 @@ Run from this folder with `python3 -I`:
   `DESIGN.md`, `CHANGES.md`, `odt-steps.md`, `radxml/`, `db/`, `js/`, `silent/`).
 - Use the release code (patch version) the user typed for every element you tag; never invent one.
 - 14.7.0.6.0 is verified; for 14.6 or other 14.7 patches, say the output is a draft to confirm in ODT.
+- When the user uploads an ODT-generated zip (`*_RAD.ZIP`), run `check_odt_zip.py` on it (with `--custom-body` pointing at
+  the hand-written body you delivered, if any) before giving deploy steps, and report its errors and warnings.
+- New lessons: you cannot change this skill. When you confirm a root cause that `reference/29-lessons-learned.md` does not
+  cover, write it to `/mnt/session/outputs/LESSON.md` in that file's lesson format (generic ODT behaviour only: no bank
+  names, data values, environment names or credentials). TrustRoute reviews these and adds them to TrustForge.
