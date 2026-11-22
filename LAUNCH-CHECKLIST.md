@@ -10,7 +10,7 @@
 4. **Resend: done (2026-11-22).** Domain verified, settings in Vercel, test sign-up accepted.
 5. **Legal review** before launch: terms of service, privacy notice, the Oracle/FLEXCUBE trademark notice,
    use of content derived from Oracle's ODT guides, and the safety promises on the home page.
-6. **Confirm content:** $500 USD per seat per month (monthly?), the Free tier limits, naming the two case
+6. **Confirm content:** price set to $100 USD per seat per month (2026-11-22), the Free tier limits, naming the two case
    studies (STDCURSK, IFDATMMN) publicly.
 
 ## Phase 2: the product
@@ -23,7 +23,8 @@
      `EARLY_ACCESS_FROM` is used.
 2. **Model account:** an Anthropic API key from console.anthropic.com (an individual account is fine to start;
    move to a company organization later by swapping the key). Not a claude.ai Pro/Max subscription.
-3. **Payments:** Stripe account for $500/seat/month subscriptions, with your company and bank details.
+3. **Payments:** Paddle (live account; domain forge.trustroutetechnologies.com submitted for approval) for
+   $100/seat/month subscriptions. Paddle needs real terms, privacy and refund pages before approving.
 4. **Storage:** where uploaded radxml/packages and job files live (S3-compatible storage), and in which region.
 5. **Data handling:** how long uploads are kept, who can see them, and what you promise banks in contracts.
 6. **Test environment:** a FLEXCUBE 14.6 environment if 14.6 is to be verified (only 14.7.0.6.0 is verified).

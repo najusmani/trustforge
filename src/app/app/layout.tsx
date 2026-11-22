@@ -25,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <nav aria-label="Workspace" className="app-nav">
               <Link className="nav-link" href="/app">Jobs</Link>
               <Link className="nav-link" href="/app/team">Team</Link>
+              <Link className="nav-link" href="/app/billing">Billing</Link>
             </nav>
           )}
           <div className="app-user">

@@ -42,6 +42,7 @@ export function SiteFooter() {
           <Link className="nav-link" href="/#plans">Plans</Link>
           <Link className="nav-link" href="/terms">Terms</Link>
           <Link className="nav-link" href="/privacy">Privacy</Link>
+          <Link className="nav-link" href="/refunds">Refunds</Link>
         </nav>
       </div>
     </footer>

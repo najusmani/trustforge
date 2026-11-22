@@ -63,5 +63,19 @@ Without `DATABASE_URL` the public pages still work, but sign-in and the workspac
 3. Domains: `forge.trustroutetechnologies.com`. In GoDaddy (My Products > trustroutetechnologies.com > DNS),
    add a CNAME record named `forge` with the value Vercel shows. Leave the existing `@`, MX and TXT records alone.
 
+## Billing (Paddle)
+- Partner is $100 USD per seat per month: Paddle price `PADDLE_PRICE_PARTNER`, quantity = seats.
+- `/app/billing`: the owner picks seats and upgrades. The server creates the Paddle transaction (team id in
+  `custom_data`, checkout URL on this site) and the browser opens Paddle's overlay for it. Subscribed teams can
+  change seats (prorated now) and open Paddle's customer portal (invoices, card, cancel).
+- `/api/paddle/webhook`: verifies Paddle's signature; for subscription events on the Partner price only, sets the
+  team's plan (active, trialing, past_due = Partner; otherwise Free with 1 seat), seats, status and period end.
+  Older events are ignored. The Paddle account also serves another website; its events are ignored.
+- Contract teams (Partner billed outside Paddle) are set on `/admin`, including seats.
+- Settings: `PADDLE_ENV` (production or sandbox), `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`,
+  `PADDLE_PRICE_PARTNER`, `PADDLE_CLIENT_TOKEN`.
+- Paddle notification destination: `https://forge.trustroutetechnologies.com/api/paddle/webhook`, subscription
+  events (created, activated, updated, canceled, past_due, paused, resumed, trialing).
+
 ## Not built yet
-Stripe billing (plans and seats are set by hand on `/admin` and the Team page for now). See `../HANDOFF.md`.
+Automatic deletion of old jobs. Legal texts (terms, privacy, refund policy) needed for Paddle's domain approval.

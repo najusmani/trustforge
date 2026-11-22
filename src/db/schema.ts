@@ -68,6 +68,14 @@ export const teams = pgTable("team", {
   seats: integer("seats").notNull().default(1),
   /** free: smaller model, 5 questions a month, review + Q&A only. partner: everything. */
   plan: text("plan").$type<Plan>().notNull().default("free"),
+  /* Paddle billing. Empty for Free teams and for Partner teams set by hand (contracts). */
+  paddleCustomerId: text("paddle_customer_id"),
+  paddleSubscriptionId: text("paddle_subscription_id"),
+  /** Paddle subscription status: active, trialing, past_due, paused, canceled. */
+  subscriptionStatus: text("subscription_status"),
+  currentPeriodEnd: timestamp("current_period_end", { mode: "date" }),
+  /** Paddle's updated_at of the last subscription event applied; older events are ignored. */
+  billingUpdatedAt: timestamp("billing_updated_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
 

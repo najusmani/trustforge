@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { HeroDemo } from "@/components/HeroDemo";
 import { Arrow, Check } from "@/components/Logo";
+import { cycleLabel, formatPrice, getPartnerPrice, type PartnerPrice } from "@/lib/pricing";
 
 const HOW = [
   { n: "01", title: "Describe", text: "Say what you need in plain words and upload your radxml, tables, packages or JS." },
@@ -26,23 +27,26 @@ const SAFETY = [
   { title: "Your bank’s data stays yours", text: "Uploaded objects are used for your job only. A private install keeps everything in your network." },
 ];
 
-const PLANS = [
+/** Re-read the Partner price from Paddle at most every 10 minutes. */
+export const revalidate = 600;
+
+const plans = (partner: PartnerPrice) => [
   {
     name: "Free",
-    price: "$0",
+    price: formatPrice({ ...partner, amountMinor: 0 }),
     per: "",
     hot: false,
     cta: "Start free",
-    href: "/early-access?plan=free",
-    items: ["Radxml review against ODT rules", "ODT questions answered from the guides", "One person"],
+    href: "/sign-in",
+    items: ["Radxml review against ODT rules", "ODT questions answered from the guides", "One person, 5 questions a month"],
   },
   {
     name: "Partner",
-    price: "$500",
-    per: "USD per seat / month",
+    price: formatPrice(partner),
+    per: `${partner.currency} per seat / ${cycleLabel(partner)}`,
     hot: true,
     cta: "Start with your team",
-    href: "/early-access?plan=partner",
+    href: "/app/billing",
     items: ["All six kinds of job", "Start with 1 seat, add more any time", "Shared job history and lessons"],
   },
   {
@@ -60,7 +64,8 @@ const PLANS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const PLANS = plans(await getPartnerPrice());
   return (
     <>
       <SiteHeader />

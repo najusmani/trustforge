@@ -128,19 +128,6 @@ export async function leaveTeam() {
   redirect("/app");
 }
 
-/** Until billing is connected, the owner sets the seat count by hand. */
-export async function setSeats(formData: FormData) {
-  const user = await requireUser("/app/team");
-  const m = await getMembership(user.id);
-  if (!m || m.role !== "owner") back("/app/team", "error", "Only the owner can change seats.");
-  if (m.team.plan === "free") back("/app/team", "error", "The Free plan includes 1 seat. Contact TrustRoute to move to Partner.");
-  const seats = Number(formData.get("seats"));
-  if (!Number.isInteger(seats) || seats < 1 || seats > 100) back("/app/team", "error", "Seats must be 1 to 100.");
-  const used = await seatsUsed(m.team.id);
-  if (seats < used) back("/app/team", "error", `${used} seat(s) are in use. Remove people or invites first.`);
-  await db.update(teams).set({ seats }).where(eq(teams.id, m.team.id));
-  back("/app/team", "notice", `Seats set to ${seats}.`);
-}
 
 export async function acceptInvite(formData: FormData) {
   const token = String(formData.get("token") ?? "");

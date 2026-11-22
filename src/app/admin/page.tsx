@@ -6,7 +6,7 @@ import { Flash } from "@/components/Flash";
 import { requireAdmin } from "@/lib/admin";
 import { getAgentSetup } from "@/lib/agent";
 import { PLAN_CONFIG } from "@/lib/plans";
-import { setTeamPlan, setupAgentsAction } from "./actions";
+import { setTeamPlan, setTeamSeats, setupAgentsAction } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · TrustForge", robots: { index: false } };
 
@@ -28,6 +28,8 @@ export default async function AdminPage({
       name: teams.name,
       plan: teams.plan,
       seats: teams.seats,
+      subscriptionId: teams.paddleSubscriptionId,
+      subscriptionStatus: teams.subscriptionStatus,
       createdAt: teams.createdAt,
       members: sql<number>`count(${teamMembers.userId})::int`,
     })
@@ -77,27 +79,46 @@ export default async function AdminPage({
                   <th scope="col">Members</th>
                   <th scope="col">Seats</th>
                   <th scope="col">Plan</th>
-                  <th scope="col"><span className="sr-only">Change plan</span></th>
+                  <th scope="col">Billing</th>
+                  <th scope="col"><span className="sr-only">Change</span></th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.name}</td>
-                    <td>{t.members}</td>
-                    <td>{t.seats}</td>
-                    <td>{PLAN_CONFIG[t.plan].label}</td>
-                    <td style={{ textAlign: "right" }}>
-                      <form action={setTeamPlan}>
-                        <input type="hidden" name="teamId" value={t.id} />
-                        <input type="hidden" name="plan" value={t.plan === "free" ? "partner" : "free"} />
-                        <button type="submit" className="link-btn">
-                          {t.plan === "free" ? "Make Partner" : "Make Free"}
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((t) => {
+                  const paddleManaged = Boolean(t.subscriptionId) && t.subscriptionStatus !== "canceled";
+                  const contract = t.plan === "partner" && !t.subscriptionId;
+                  return (
+                    <tr key={t.id}>
+                      <td>{t.name}</td>
+                      <td>{t.members}</td>
+                      <td>
+                        {contract ? (
+                          <form action={setTeamSeats} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input type="hidden" name="teamId" value={t.id} />
+                            <label className="sr-only" htmlFor={`seats-${t.id}`}>Seats for {t.name}</label>
+                            <input className="input" id={`seats-${t.id}`} name="seats" type="number" min={1} max={500} defaultValue={t.seats} style={{ width: 80, minHeight: 36 }} />
+                            <button type="submit" className="link-btn">Save</button>
+                          </form>
+                        ) : (
+                          t.seats
+                        )}
+                      </td>
+                      <td>{PLAN_CONFIG[t.plan].label}</td>
+                      <td>{paddleManaged ? `Paddle: ${t.subscriptionStatus}` : contract ? "Contract" : t.subscriptionStatus === "canceled" ? "Paddle: cancelled" : "-"}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {!paddleManaged && (
+                          <form action={setTeamPlan}>
+                            <input type="hidden" name="teamId" value={t.id} />
+                            <input type="hidden" name="plan" value={t.plan === "free" ? "partner" : "free"} />
+                            <button type="submit" className="link-btn">
+                              {t.plan === "free" ? "Make Partner (contract)" : "Make Free"}
+                            </button>
+                          </form>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
