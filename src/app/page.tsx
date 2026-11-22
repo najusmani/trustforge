@@ -154,26 +154,12 @@ export default function Home() {
             </div>
             <div className="cases">
               <article className="card lift reveal case">
-                <div className="case-top">
-                  <span className="case-id">STDCURSK</span>
-                  <span className="status ok"><span className="dot ok" />Live in FLEXCUBE</span>
-                </div>
-                <h3>A new customer risk profile screen</h3>
-                <p>
-                  A maintenance screen with a grid of risk factors, built from two tables. Loaded and generated in ODT,
-                  compiled, deployed and in use.
-                </p>
+                <span className="case-id">STDCURSK</span>
+                <h3>Customer risk profile screen</h3>
               </article>
               <article className="card lift reveal case">
-                <div className="case-top">
-                  <span className="case-id">IFDATMMN</span>
-                  <span className="status warm"><span className="dot" />Generated in ODT</span>
-                </div>
-                <h3>A sixth charge on an Oracle function</h3>
-                <p>
-                  36 fields, a tab and a slab screen added in the CUSTOM layer, with 0 Oracle values changed, and
-                  charge 6 posted on teller transactions.
-                </p>
+                <span className="case-id">IFDATMMN</span>
+                <h3>Sixth charge on ARC maintenance</h3>
               </article>
             </div>
           </div>

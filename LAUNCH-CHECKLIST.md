@@ -8,9 +8,7 @@ Needed from you:
 3. **Vercel account.** Sign in to vercel.com with GitHub and import the repository. Vercel's free Hobby plan
    is for non-commercial use, so a business site needs a paid plan; check the current price on vercel.com.
    Any Node.js host (Azure, AWS, your own server) also works.
-4. **Resend account** (free tier) to receive sign-ups by email: verify your domain there, create an API key,
-   and choose the inbox that receives sign-ups. Put them in Vercel as `RESEND_API_KEY`, `EARLY_ACCESS_TO`,
-   `EARLY_ACCESS_FROM`.
+4. **Resend: done (2026-11-22).** Domain verified, settings in Vercel, test sign-up accepted.
 5. **Legal review** before launch: terms of service, privacy notice, the Oracle/FLEXCUBE trademark notice,
    use of content derived from Oracle's ODT guides, and the safety promises on the home page.
 6. **Confirm content:** $500 USD per seat per month (monthly?), the Free tier limits, the two case studies
