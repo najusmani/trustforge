@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { JobView, ViewItem } from "@/lib/jobs";
 import { SubmitButton } from "@/components/SubmitButton";
+import { Markdown } from "@/components/Markdown";
+import { LogoMark } from "@/components/Logo";
 import { answerApproval, replyToJob, stopJob } from "../actions";
 
 type FileRow = { id: string; name: string; size: number };
@@ -22,11 +24,10 @@ function statusOf(view: JobView | null): { label: string; tone: "work" | "you" |
   return { label: "Your turn", tone: "done" };
 }
 
-function Item({ item }: { item: ViewItem }) {
+function Item({ item, live }: { item: ViewItem; live: boolean }) {
   if (item.kind === "user") {
     return (
       <li className="msg msg-user">
-        <span className="msg-who">You</span>
         <div className="msg-text">{item.text}</div>
       </li>
     );
@@ -34,17 +35,24 @@ function Item({ item }: { item: ViewItem }) {
   if (item.kind === "agent") {
     return (
       <li className="msg msg-agent">
-        <span className="msg-who">TrustForge</span>
-        <div className="msg-text">{item.text}</div>
+        <span className="agent-mark" aria-hidden="true">
+          <LogoMark size={28} />
+        </span>
+        <div className="agent-body">
+          <span className="msg-who">TrustForge</span>
+          <Markdown>{item.text}</Markdown>
+        </div>
       </li>
     );
   }
-  if (item.kind === "tool") {
+  if (item.kind === "thinking") {
     return (
-      <li className={`msg-tool${item.permission === "deny" ? " denied" : ""}`}>
-        <span className="mono tool-name">{item.name}</span>
-        <span className="mono tool-detail">{item.detail}</span>
-        {item.permission === "deny" && <span className="tool-flag">blocked</span>}
+      <li className={`thinking${live ? " live" : ""}`}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <span>TrustForge thinking</span>
+        {live && <span className="thinking-dots" aria-hidden="true"><span /><span /><span /></span>}
       </li>
     );
   }
@@ -127,8 +135,18 @@ export function JobLive({
         {problem && <p className="flash flash-err">{problem}</p>}
 
         <ol className="msgs">
-          {view?.items.map((it) => <Item key={it.id} item={it} />)}
-          {busy && <li className="msg-typing" aria-hidden="true"><span /><span /><span /></li>}
+          {view?.items.map((it, i) => (
+            <Item key={it.id} item={it} live={busy && i === view.items.length - 1} />
+          ))}
+          {busy && view?.items[view.items.length - 1]?.kind !== "thinking" && (
+            <li className="thinking live">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span>TrustForge thinking</span>
+              <span className="thinking-dots" aria-hidden="true"><span /><span /><span /></span>
+            </li>
+          )}
         </ol>
         <div ref={endRef} />
 

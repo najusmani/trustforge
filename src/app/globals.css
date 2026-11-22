@@ -381,3 +381,29 @@ select.input { appearance: auto; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
 .kv dt { color: var(--text-3); }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---------- Answers and thinking ---------- */
+.msg-agent { flex-direction: row; gap: 12px; align-items: flex-start; }
+.agent-mark { flex: none; margin-top: 2px; }
+.agent-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.md { font-size: 15px; line-height: 1.65; color: var(--text); overflow-wrap: anywhere; }
+.md > :first-child { margin-top: 0; } .md > :last-child { margin-bottom: 0; }
+.md p { margin: 0 0 12px; }
+.md h1, .md h2, .md h3 { font-family: var(--font-fraunces), serif; font-weight: 500; margin: 18px 0 8px; line-height: 1.2; }
+.md h1 { font-size: 24px; } .md h2 { font-size: 21px; } .md h3 { font-size: 18px; }
+.md ul, .md ol { margin: 0 0 12px; padding-left: 22px; } .md li { margin: 4px 0; }
+.md strong { color: #fff; }
+.md code { font-family: var(--font-geist-mono), monospace; font-size: 13px; color: var(--accent-soft); background: #1a1510; padding: 1px 6px; border-radius: 5px; }
+.md pre { margin: 0 0 12px; padding: 14px 16px; background: var(--bg-deep); border: 1px solid var(--line-2); border-radius: 10px; overflow-x: auto; }
+.md pre code { background: none; padding: 0; color: #d9dfe6; }
+.md blockquote { margin: 0 0 12px; padding: 4px 14px; border-left: 3px solid var(--ember-line); color: var(--text-2); }
+.md-table { overflow-x: auto; margin: 0 0 12px; border: 1px solid var(--line-2); border-radius: 10px; }
+.md table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.md th { text-align: left; font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--line-2); }
+.md td { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.md tr:last-child td { border-bottom: 0; }
+.thinking { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3); padding: 2px 0 2px 40px; }
+.thinking.live { color: var(--accent-hi); }
+.thinking-dots { display: inline-flex; gap: 4px; }
+.thinking-dots span { width: 5px; height: 5px; border-radius: 3px; background: var(--accent-hi); animation: tf-glow 1s ease-in-out infinite; }
+.thinking-dots span:nth-child(2) { animation-delay: .15s; } .thinking-dots span:nth-child(3) { animation-delay: .3s; }

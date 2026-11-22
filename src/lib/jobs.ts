@@ -106,7 +106,8 @@ export async function deleteAnthropicFiles(fileIds: string[]) {
 export type ViewItem =
   | { kind: "user"; id: string; text: string; at: string }
   | { kind: "agent"; id: string; text: string; at: string }
-  | { kind: "tool"; id: string; name: string; detail: string; permission: "allow" | "ask" | "deny" | null; at: string }
+  /** Consecutive tool steps, merged. Commands and paths are not sent to the browser. */
+  | { kind: "thinking"; id: string; steps: number; at: string }
   | { kind: "error"; id: string; text: string; at: string };
 
 export type JobView = {
@@ -150,9 +151,11 @@ export async function getJobView(sessionId: string, withOutputs: boolean): Promi
         break;
       }
       case "agent.tool_use": {
-        const detail = toolDetail(e.name, e.input as Record<string, unknown>);
-        items.push({ kind: "tool", id: e.id, name: e.name, detail, permission: e.evaluated_permission ?? null, at: e.processed_at });
-        if (e.evaluated_permission === "ask") asked.set(e.id, { name: e.name, detail });
+        const last = items[items.length - 1];
+        if (last?.kind === "thinking") last.steps += 1;
+        else items.push({ kind: "thinking", id: e.id, steps: 1, at: e.processed_at });
+        // Approvals still show what will run: the user needs that to decide.
+        if (e.evaluated_permission === "ask") asked.set(e.id, { name: e.name, detail: toolDetail(e.name, e.input as Record<string, unknown>) });
         break;
       }
       case "user.tool_confirmation":
