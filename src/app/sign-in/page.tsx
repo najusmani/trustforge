@@ -5,7 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { Arrow } from "@/components/Logo";
 import { requestSignIn } from "./actions";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { title: "Sign in", description: "Sign in to TrustForge with a one-time email link.", alternates: { canonical: "/sign-in" }, robots: { index: false, follow: true } };
 
 const ERRORS: Record<string, string> = {
   InvalidEmail: "Please enter a valid email address.",

@@ -1,36 +1,25 @@
+/** TrustForge mark in the TrustRoute style: a gold hairline diamond with a forged "T". For navy backgrounds. */
 export function LogoMark({ size = 34 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="tf-logo" x1="0" y1="0" x2="34" y2="34">
-          <stop offset="0" stopColor="#FFB37A" />
-          <stop offset="1" stopColor="#F0602A" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="32" height="32" rx="9" fill="url(#tf-logo)" />
-      <path
-        d="M9 13h16M17 13v11M12 19.5l5 5 5-5"
-        stroke="#1A0E05"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width={size} height={size} viewBox="0 0 38 38" fill="none" aria-hidden="true">
+      <rect x="19" y="2.5" width="23.3" height="23.3" transform="rotate(45 19 2.5)" stroke="#C9AE78" strokeWidth="1" />
+      <path d="M12.5 14.5h13M19 14.5v11M15.5 22l3.5 3.5 3.5-3.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 export function Arrow() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="M4 9h10M10 5l4 4-4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="22" height="10" viewBox="0 0 22 10" fill="none" aria-hidden="true">
+      <path d="M0 5h20M16 1l4 4-4 4" stroke="currentColor" strokeWidth="1" />
     </svg>
   );
 }
 
-export function Check({ color = "#FF8A3D" }: { color?: string }) {
+export function Check({ color = "#C9AE78" }: { color?: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="m4 9.4 3 3L14 5.6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m4 9.4 3 3L14 5.6" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

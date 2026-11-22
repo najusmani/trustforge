@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
 import { cycleLabel, formatPrice, getPartnerPrice } from "@/lib/pricing";
 
-export const metadata: Metadata = { title: "Terms of service" };
+export const metadata: Metadata = { title: "Terms of service", description: "Terms of service for TrustForge, the AI assistant for Oracle FLEXCUBE customization by TrustRoute Technologies.", alternates: { canonical: "/terms" } };
 export const revalidate = 600;
 
 export default async function TermsPage() {

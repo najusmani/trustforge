@@ -1,21 +1,31 @@
 import Link from "next/link";
+import { ARTICLES } from "@/lib/learn";
+import { SITE } from "@/lib/site";
 import { LogoMark } from "./Logo";
+
+export function Brand({ sub = true }: { sub?: boolean }) {
+  return (
+    <Link href="/" className="brand" aria-label="TrustForge home">
+      <LogoMark size={36} />
+      <span className="brand-text">
+        <span className="brand-name">TrustForge</span>
+        {sub && <span className="brand-sub">TrustRoute Technologies</span>}
+      </span>
+    </Link>
+  );
+}
 
 export function SiteHeader() {
   return (
     <header className="site-header">
       <nav aria-label="Main" className="wrap site-nav">
-        <Link href="/" className="brand">
-          <LogoMark />
-          <span className="brand-name">TrustForge</span>
-        </Link>
+        <Brand />
         <div className="nav-links">
           <Link className="nav-link hide-sm" href="/#how">How it works</Link>
-          <Link className="nav-link hide-sm" href="/#build">What you can build</Link>
-          <Link className="nav-link hide-sm" href="/#safety">Safety</Link>
+          <Link className="nav-link hide-sm" href="/learn">Learn</Link>
           <Link className="nav-link" href="/#plans">Plans</Link>
           <Link className="nav-link strong" href="/sign-in">Sign in</Link>
-          <Link className="btn btn-solid btn-sm" href="/app">Start a job</Link>
+          <Link className="btn" href="/app">Start a job</Link>
         </div>
       </nav>
     </header>
@@ -28,22 +38,39 @@ export function SiteFooter() {
       <div className="wrap footer-grid">
         <div className="footer-brand">
           <span className="brand-name">TrustForge</span>
-          <span style={{ fontSize: 14, color: "var(--text-3)" }}>
-            A product of <a href="https://trustroutetechnologies.com">TrustRoute Technologies</a>. © {new Date().getFullYear()}.
+          <span>
+            AI for Oracle FLEXCUBE customization and ODT development. A product of{" "}
+            <a href={SITE.companyUrl}>{SITE.companyLegal}</a>, {SITE.locality}, {SITE.region}, Canada. ©{" "}
+            {new Date().getFullYear()}.
           </span>
           <span className="footer-small">
             Oracle and FLEXCUBE are registered trademarks of Oracle and/or its affiliates. TrustForge is not affiliated
             with or endorsed by Oracle.
           </span>
         </div>
-        <nav aria-label="Footer" className="footer-links">
-          <Link className="nav-link" href="/#how">How it works</Link>
-          <Link className="nav-link" href="/#safety">Safety</Link>
-          <Link className="nav-link" href="/#plans">Plans</Link>
-          <Link className="nav-link" href="/terms">Terms</Link>
-          <Link className="nav-link" href="/privacy">Privacy</Link>
-          <Link className="nav-link" href="/refunds">Refunds</Link>
-        </nav>
+        <div className="footer-cols">
+          <nav aria-label="Learn" className="footer-col">
+            <span className="footer-col-h">Learn FLEXCUBE</span>
+            {ARTICLES.slice(0, 5).map((a) => (
+              <Link key={a.slug} href={`/learn/${a.slug}`}>{a.short}</Link>
+            ))}
+            <Link href="/learn">All guides</Link>
+          </nav>
+          <nav aria-label="Product" className="footer-col">
+            <span className="footer-col-h">TrustForge</span>
+            <Link href="/#how">How it works</Link>
+            <Link href="/#plans">Plans</Link>
+            <Link href="/#faq">Questions</Link>
+            <Link href="/sign-in">Sign in</Link>
+          </nav>
+          <nav aria-label="Legal" className="footer-col">
+            <span className="footer-col-h">Legal</span>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/refunds">Refunds</Link>
+            <a href={`mailto:${SITE.email}`}>Contact</a>
+          </nav>
+        </div>
       </div>
     </footer>
   );

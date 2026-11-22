@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Privacy notice" };
+export const metadata: Metadata = { title: "Privacy notice", description: "How TrustForge collects, uses and protects information, which services process it, and your rights.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   const L = LEGAL;

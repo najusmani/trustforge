@@ -3,12 +3,13 @@ import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { teamMembers, teams } from "@/db/schema";
 import { Flash } from "@/components/Flash";
+import { Brand } from "@/components/SiteChrome";
 import { requireAdmin } from "@/lib/admin";
 import { getAgentSetup } from "@/lib/agent";
 import { PLAN_CONFIG } from "@/lib/plans";
 import { setTeamPlan, setTeamSeats, setupAgentsAction } from "./actions";
 
-export const metadata: Metadata = { title: "Admin · TrustForge", robots: { index: false } };
+export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
 const dateFmt = new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
@@ -39,6 +40,16 @@ export default async function AdminPage({
     .orderBy(desc(teams.createdAt));
 
   return (
+    <div className="app-shell">
+    <header className="app-header">
+      <div className="app-header-inner">
+        <Brand sub={false} />
+        <span className="app-team">Admin</span>
+        <nav aria-label="Admin" className="app-nav" style={{ marginLeft: "auto" }}>
+          <a className="nav-link" href="/app">Workspace</a>
+        </nav>
+      </div>
+    </header>
     <main className="app-main">
       <div className="app-wide">
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -125,5 +136,6 @@ export default async function AdminPage({
         </section>
       </div>
     </main>
+    </div>
   );
 }

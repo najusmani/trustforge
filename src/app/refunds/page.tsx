@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Refund policy" };
+export const metadata: Metadata = { title: "Refund policy", description: "TrustForge refund policy: 14-day money-back on your first Partner payment, cancel any time, refunds through Paddle.", alternates: { canonical: "/refunds" } };
 
 export default function RefundsPage() {
   const L = LEGAL;

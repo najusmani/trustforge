@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 
-export const metadata: Metadata = { title: "Check your email" };
+export const metadata: Metadata = { title: "Check your email", robots: { index: false, follow: false } };
 
 export default function CheckEmailPage() {
   return (

@@ -5,6 +5,7 @@ import { EarlyAccessForm } from "./EarlyAccessForm";
 export const metadata: Metadata = {
   title: "Early access",
   description: "Get early access to TrustForge for Oracle FLEXCUBE UBS 14.6 and 14.7.",
+  alternates: { canonical: "/early-access" },
 };
 
 const PLANS = ["free", "partner", "private"] as const;
