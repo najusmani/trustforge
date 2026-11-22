@@ -23,7 +23,14 @@ export default function RefundsPage() {
         <li>If you were charged by mistake (for example, twice), we will refund the mistaken charge.</li>
       </ul>
 
-      <h2>3. How to ask</h2>
+      <h2>3. Extra usage</h2>
+      <p>
+        Extra usage you haven’t used can be refunded within {L.refundDays} days of buying it. Extra usage that has been
+        used isn’t refundable. If your team leaves Partner, unused extra usage stays on the team and is available again
+        if you come back.
+      </p>
+
+      <h2>4. How to ask</h2>
       <p>
         Our order process is conducted by our online reseller Paddle.com, the Merchant of Record for all our orders.
         Request a refund through Paddle (the link in your receipt email, or <a href="https://paddle.net" target="_blank" rel="noopener noreferrer">paddle.net</a>),
@@ -31,7 +38,7 @@ export default function RefundsPage() {
         back to the original payment method, usually within 5 to 10 business days.
       </p>
 
-      <h2>4. Your legal rights</h2>
+      <h2>5. Your legal rights</h2>
       <p>
         This policy doesn’t affect any rights you have under the law where you live. See also our{" "}
         <Link href="/terms">terms of service</Link>.

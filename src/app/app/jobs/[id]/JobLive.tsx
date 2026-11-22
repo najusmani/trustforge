@@ -5,6 +5,7 @@ import type { JobView, ViewItem } from "@/lib/jobs";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Markdown } from "@/components/Markdown";
 import { LogoMark } from "@/components/Logo";
+import { UsageMeter } from "@/components/UsageMeter";
 import { answerApproval, replyToJob, stopJob } from "../actions";
 
 type FileRow = { id: string; name: string; size: number };
@@ -20,7 +21,7 @@ function statusOf(view: JobView | null): { label: string; tone: "work" | "you" |
   if (view.pending.length) return { label: "Needs your approval", tone: "you" };
   if (view.status === "running" || view.status === "rescheduling") return { label: "TrustForge is working…", tone: "work" };
   if (view.status === "terminated") return { label: "Job ended", tone: "done" };
-  if (view.stopReason === "budget_reached") return { label: "Spending cap reached", tone: "warn" };
+  if (view.stopReason === "budget_reached") return { label: view.usage?.blocked ? "Usage limit reached" : "Paused", tone: "warn" };
   return { label: "Your turn", tone: "done" };
 }
 
@@ -116,7 +117,9 @@ export function JobLive({
 
   const status = statusOf(view);
   const busy = view?.status === "running" || view?.status === "rescheduling";
-  const blocked = Boolean(view?.pending.length) || view?.stopReason === "budget_reached" || view?.status === "terminated";
+  const limited = view?.usage ? view.usage.remainingCents < 10 : false;
+  const capped = view?.stopReason === "budget_reached" && !view?.usage; // Free job at its fixed cap
+  const blocked = Boolean(view?.pending.length) || capped || limited || view?.status === "terminated";
   const outOfQuestions = questionsLeft !== null && questionsLeft <= 0;
 
   return (
@@ -173,13 +176,28 @@ export function JobLive({
           </div>
         ))}
 
-        {view?.stopReason === "budget_reached" && (
+        {capped && (
           <p className="flash flash-err">This job reached its spending cap. Start a new job to continue, or contact TrustRoute.</p>
+        )}
+        {limited && view?.usage && (
+          <p className="flash flash-err">
+            {view.usage.blocked ? (
+              <>
+                You’ve reached your {view.usage.blocked.key === "day" ? "daily" : view.usage.blocked.key === "week" ? "weekly" : "monthly"} usage
+                limit. You can continue when it resets, or your team owner can <a href="/app/billing#extra">add extra usage</a>.
+              </>
+            ) : (
+              <>Your other running jobs are using the rest of your allowance. Continue here when they finish.</>
+            )}
+          </p>
+        )}
+        {view?.stopReason === "budget_reached" && view?.usage && !limited && (
+          <p className="flash flash-warn">TrustForge paused at the usage ceiling for that turn. Send a message to continue.</p>
         )}
 
         {outOfQuestions ? (
           <p className="flash flash-err">
-            You’ve used this month’s {questionsLimit} Free questions. They reset on the 1st, or move to Partner for unlimited jobs.
+            You’ve used this month’s {questionsLimit} Free questions. They reset on the 1st, or move to Partner for every job type.
           </p>
         ) : (
           <form action={replyToJob} className="composer">
@@ -191,7 +209,7 @@ export function JobLive({
               className="input"
               rows={3}
               maxLength={20000}
-              placeholder={blocked ? "Answer the approval above first" : "Reply, approve the plan, or ask for a change"}
+              placeholder={view?.pending.length ? "Answer the approval above first" : blocked ? "Messages are paused" : "Reply, approve the plan, or ask for a change"}
               disabled={blocked}
             />
             <div className="composer-row">
@@ -240,8 +258,11 @@ export function JobLive({
             <p style={{ margin: 0, fontSize: 14, color: "var(--text-3)" }}>None yet.</p>
           )}
         </section>
-        {view?.costCents != null && (
-          <p style={{ margin: 0, fontSize: 13, color: "var(--text-3)" }}>Usage so far: ${(view.costCents / 100).toFixed(2)} at list price.</p>
+        {view?.usage && (
+          <section className="card panel" aria-labelledby="usage-side-h">
+            <h2 id="usage-side-h" className="panel-h" style={{ fontSize: 20 }}>Your usage</h2>
+            <UsageMeter usage={view.usage} compact />
+          </section>
         )}
       </aside>
     </div>

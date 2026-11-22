@@ -251,6 +251,20 @@ else:
         if any(c and len(c) != 16 for c in cs):
             warns.append('CONTROL_STRING should be 16 characters')
 
+# ---- amendables need the Actions node in the layer being generated (lesson L1)
+# ODT generates the amendable INCs (GWTM_/GWTB_AMEND_*) from the RAD_ACTIONS of the release being generated. A higher
+# layer that adds amendable fields but has no RAD_ACTIONS of its own gets NO amend INCs, even with Amendable ticked,
+# and Modify then fails with ST-AMND-002 on every new field.
+release = (root.findtext('RELEASE_TYPE') or '').strip()
+top = root.find('RAD_' + release) if release in ('CLUSTER', 'CUSTOM', 'CUSTOMER') else None
+if top is not None and origin != release:
+    new_amend = [f.get('ID') for b in top.findall('RAD_DATA_BLOCKS') for f in b.findall('RAD_BLK_FIELDS')
+                 if (f.findtext('AMENDABLE_IN') or '').strip() and (f.findtext('DBT') or '').strip()]
+    if new_amend and top.find('RAD_ACTIONS') is None:
+        errs.append(f'RAD_{release} adds {len(new_amend)} amendable field(s) ({", ".join(new_amend[:3])}...) but has no '
+                    f'RAD_ACTIONS: ODT will not generate the amendable INCs and Modify fails with ST-AMND-002. Copy the '
+                    f'kernel RAD_ACTIONS whole into RAD_{release} (or open Actions in ODT in this release and Save).')
+
 print(f'file: {path}')
 print(f'function {fid}  origin {origin}  layers {[l.tag for l in layers]}')
 print('blocks:', {k: sorted(v) for k, v in bfields.items()})

@@ -18,13 +18,30 @@ import {
 } from "@/lib/jobs";
 import { JOB_TYPE_LABEL, LAYERS, PLAN_CONFIG, RELEASES } from "@/lib/plans";
 import { getMembership, requireUser } from "@/lib/teams";
+import { headroomForNewJob, limitReachedMessage, startTurn, UsageLimitReached } from "@/lib/usage";
 
 function fail(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
 function limitMessage() {
-  return `You’ve used this month’s ${PLAN_CONFIG.free.questionsPerMonth} Free questions. They reset on the 1st, or upgrade to Partner for unlimited jobs.`;
+  return `You’ve used this month’s ${PLAN_CONFIG.free.questionsPerMonth} Free questions. They reset on the 1st, or move to Partner for every job type.`;
+}
+
+/** Partner: counts the job's cost so far and gives this member's turn a ceiling of what they have left. */
+async function beginTurn(
+  team: NonNullable<Awaited<ReturnType<typeof getJobForUser>>>["team"],
+  userId: string,
+  job: NonNullable<Awaited<ReturnType<typeof getJobForUser>>>["job"],
+  path: string,
+) {
+  try {
+    await startTurn(team, userId, job);
+  } catch (err) {
+    if (err instanceof UsageLimitReached) fail(path, limitReachedMessage(err.window));
+    console.error("[usage] start turn failed", err);
+    fail(path, "TrustForge couldn’t check your usage just now. Please try again.");
+  }
 }
 
 export async function createJob(formData: FormData) {
@@ -59,6 +76,16 @@ export async function createJob(formData: FormData) {
   const { files, error } = checkUploads(formData.getAll("files"));
   if (error) fail(NEW, error);
 
+  // Partner: the job's first turn may spend at most what this member has left today / this week / this month.
+  let budgetCents = cfg.budgetCents;
+  try {
+    const headroom = await headroomForNewJob(m.team, user.id);
+    if (headroom !== null) budgetCents = headroom;
+  } catch (err) {
+    if (err instanceof UsageLimitReached) fail(NEW, limitReachedMessage(err.window));
+    throw err;
+  }
+
   const c = anthropic();
   let uploaded: Awaited<ReturnType<typeof uploadFiles>> = [];
   let jobId: string | null = null;
@@ -69,7 +96,19 @@ export async function createJob(formData: FormData) {
 
     const [job] = await db
       .insert(jobs)
-      .values({ teamId: m.team.id, createdBy: user.id, title, jobType, release, layer, patchVersion: patchVersion || "-", plan })
+      .values({
+        teamId: m.team.id,
+        createdBy: user.id,
+        title,
+        jobType,
+        release,
+        layer,
+        patchVersion: patchVersion || "-",
+        plan,
+        actorId: user.id,
+        budgetCents,
+        costOpen: 1,
+      })
       .returning();
     jobId = job.id;
     if (uploaded.length) {
@@ -82,7 +121,7 @@ export async function createJob(formData: FormData) {
       title: `${JOB_TYPE_LABEL[jobType]}: ${title}`.slice(0, 200),
       metadata: { job_id: job.id, team_id: m.team.id },
       resources: uploaded.map((u) => ({ type: "file" as const, file_id: u.fileId, mount_path: `/${u.name}` })),
-      budget: { type: "limit", max_list_cost: { amount: String(cfg.budgetCents), currency: "USD" } },
+      budget: { type: "limit", max_list_cost: { amount: String(budgetCents), currency: "USD" } },
     });
     sessionId = session.id;
     await db.update(jobs).set({ sessionId: session.id }).where(eq(jobs.id, job.id));
@@ -132,6 +171,7 @@ export async function replyToJob(formData: FormData) {
 
   const left = await questionsLeft(team.id, team.plan);
   if (left !== null && left <= 0) fail(path, limitMessage());
+  await beginTurn(team, user.id, job, path);
 
   const c = anthropic();
   try {
@@ -165,6 +205,7 @@ export async function answerApproval(formData: FormData) {
   if (!found?.job.sessionId) redirect("/app");
   const eventId = String(formData.get("eventId") ?? "");
   const decision = formData.get("decision") === "allow" ? "allow" : "deny";
+  await beginTurn(found.team, user.id, found.job, path);
   try {
     await anthropic().beta.sessions.events.send(found.job.sessionId, {
       events: [

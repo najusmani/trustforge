@@ -22,7 +22,9 @@ export type Article = {
 
 const PUBLISHED = "2026-11-22";
 
-export const ARTICLES: Article[] = [
+import { MORE_ARTICLES } from "@/lib/learn-more";
+
+const BASE_ARTICLES: Article[] = [
   {
     slug: "what-is-flexcube-odt",
     title: "What is FLEXCUBE ODT? Oracle Development Workbench explained",
@@ -353,6 +355,9 @@ The fastest way to learn is to build real changes and get them checked. TrustFor
     ],
   },
 ];
+
+/** All guides; the newest set first so the hub and the home page lead with them. */
+export const ARTICLES: Article[] = [...MORE_ARTICLES, ...BASE_ARTICLES];
 
 export function getArticle(slug: string): Article | undefined {
   return ARTICLES.find((a) => a.slug === slug);

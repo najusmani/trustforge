@@ -212,8 +212,15 @@ def main(argv):
     if expected:
         missing_incs = [t for t in AMEND_INCS if t not in incs]
         if missing_incs:
+            layer = root.find('RAD_' + release) if release in ('CLUSTER', 'CUSTOM', 'CUSTOMER') else None
+            if not new_function and layer is not None and layer.find('RAD_ACTIONS') is None:
+                why = (f'RAD_{release} has no RAD_ACTIONS, so ODT generates no amendables for this release even with '
+                       f'Amendable ticked. Copy the kernel RAD_ACTIONS whole into RAD_{release} (or open Actions in ODT '
+                       f'in this release and Save), then generate again with Amendable ticked.')
+            else:
+                why = 'tick Amendable on the Generate screen.'
             err('amend', f'{len(expected)} fields are amendable but the zip has no {", ".join(missing_incs)} INC(s): '
-                         'tick Amendable on the Generate screen. Without them Modify fails with ST-AMND-002.')
+                         f'{why} Without them Modify fails with ST-AMND-002.')
         else:
             gwtb = {(r.get('OPERATION_CODE', ''), r.get('NODE_NAME', ''), r.get('FIELD_NAME', ''))
                     for r in parse_inserts(inc_text('GWTB_AMEND_FIELDS'))}

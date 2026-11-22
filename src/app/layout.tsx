@@ -19,7 +19,7 @@ export const viewport: Viewport = { themeColor: "#0e1f3f" };
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name}: AI for Oracle FLEXCUBE customization and ODT development`,
+    default: `${SITE.name}: AI agent for Oracle FLEXCUBE customization, built on Anthropic`,
     template: `%s | ${SITE.name}`,
   },
   description: SITE.description,

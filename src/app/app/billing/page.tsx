@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Flash } from "@/components/Flash";
-import { billingReady } from "@/lib/paddle";
-import { cycleLabel, formatPrice, getPartnerPrice } from "@/lib/pricing";
-import { PLAN_CONFIG } from "@/lib/plans";
+import { billingReady, topupReady } from "@/lib/paddle";
+import { cycleLabel, formatPrice, getPartnerPrice, getTopupPrice } from "@/lib/pricing";
+import { PLAN_CONFIG, TOPUP, topupValueCents } from "@/lib/plans";
+import { topupBalance } from "@/lib/usage";
 import { getMembership, requireUser, seatsUsed } from "@/lib/teams";
 import { changeSeats, openPortal } from "./actions";
+import { TopupForm } from "./TopupForm";
 import { UpgradeForm } from "./UpgradeForm";
 
 export const metadata: Metadata = { title: "Billing" };
@@ -29,7 +31,9 @@ export default async function BillingPage({
   const m = await getMembership(user.id);
   if (!m) redirect("/app");
   const { team, role } = m;
-  const [used, price] = await Promise.all([seatsUsed(team.id), getPartnerPrice()]);
+  const [used, price, unit, balance] = await Promise.all([seatsUsed(team.id), getPartnerPrice(), getTopupPrice(), topupBalance(team.id)]);
+  const extra = topupValueCents(balance);
+  const usd = (c: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(c / 100);
   const cycle = cycleLabel(price);
   const owner = role === "owner";
   const subscribed = Boolean(team.paddleSubscriptionId) && team.plan === "partner";
@@ -75,6 +79,31 @@ export default async function BillingPage({
         </section>
       )}
 
+      {team.plan === "partner" && (
+        <section className="card panel" id="extra" aria-labelledby="extra-h">
+          <h2 id="extra-h" className="panel-h">Extra usage</h2>
+          <p className="lead" style={{ fontSize: 15 }}>
+            When someone reaches their daily, weekly or monthly limit, they can keep working on your team’s extra usage.
+            It’s shared by the whole team and doesn’t expire while you’re on Partner.
+          </p>
+          <dl className="kv">
+            <dt>Left</dt><dd>{usd(extra)}</dd>
+          </dl>
+          {!owner ? (
+            <p style={{ margin: 0, fontSize: 14, color: "var(--text-2)" }}>Ask your team owner to add extra usage.</p>
+          ) : !topupReady() ? (
+            <p style={{ margin: 0, fontSize: 14, color: "var(--text-2)" }}>Extra usage can’t be bought online yet. Contact TrustRoute.</p>
+          ) : (
+            <>
+              <TopupForm unit={unit} maxUnits={TOPUP.maxUnits} />
+              <p style={{ margin: 0, fontSize: 13, color: "var(--text-3)" }}>
+                One-time payment through Paddle; taxes are added where they apply. See the <a href="/refunds">refund policy</a>.
+              </p>
+            </>
+          )}
+        </section>
+      )}
+
       {contract && (
         <section className="card panel">
           <p className="lead" style={{ fontSize: 15 }}>
@@ -89,7 +118,7 @@ export default async function BillingPage({
           <h2 className="panel-h">Upgrade to Partner</h2>
           <ul className="plan-points">
             <li>All six kinds of job: new screens, customizations, hook code, Silent ODT, reviews, questions</li>
-            <li>{PLAN_CONFIG.partner.modelLabel} at medium effort, no monthly question limit</li>
+            <li>Anthropic’s most capable AI, with a daily, weekly and monthly usage allowance per seat</li>
             <li>Seats for your team: {formatPrice(price)} {price.currency} per seat per {cycle}, cancel any time</li>
           </ul>
           {!owner ? (

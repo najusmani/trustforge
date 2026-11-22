@@ -46,6 +46,21 @@ const fetchPrice = unstable_cache(
   { revalidate: 600, tags: [PRICE_CACHE_TAG] },
 );
 
+const TOPUP_FALLBACK: PartnerPrice = { ...FALLBACK, amountMinor: 1000, interval: "once", frequency: 1 };
+
+/** The extra-usage unit price (PADDLE_PRICE_TOPUP), read from Paddle like the Partner price. */
+export async function getTopupPrice(): Promise<PartnerPrice> {
+  const { apiKey, topupPriceId } = paddleConfig();
+  if (!apiKey || !topupPriceId) return TOPUP_FALLBACK;
+  try {
+    const price = await fetchPrice(topupPriceId);
+    return Number.isFinite(price.amountMinor) ? { ...price, interval: "once" } : TOPUP_FALLBACK;
+  } catch (err) {
+    console.error("[pricing] Paddle top-up price lookup failed; using fallback", err);
+    return TOPUP_FALLBACK;
+  }
+}
+
 export async function getPartnerPrice(): Promise<PartnerPrice> {
   const { apiKey, priceId } = paddleConfig();
   if (!apiKey || !priceId) return FALLBACK;

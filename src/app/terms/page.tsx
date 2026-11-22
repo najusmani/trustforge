@@ -74,6 +74,16 @@ export default async function TermsPage() {
           and at checkout.
         </li>
         <li>
+          Each Partner seat includes a daily, weekly and monthly usage allowance. Each member can see their usage in the
+          workspace. When an allowance is used up, new messages wait until it resets; work already delivered is not
+          affected. We may adjust allowances, and will tell you in advance if we reduce them.
+        </li>
+        <li>
+          The team owner can buy extra usage as a one-time payment. It is shared by the team, is used only after a
+          member reaches an allowance, and does not expire while the team stays on Partner. Unused allowance does not
+          carry over to the next period.
+        </li>
+        <li>
           Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all
           our orders. Paddle provides all customer service inquiries and handles returns.
         </li>

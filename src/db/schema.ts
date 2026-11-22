@@ -76,6 +76,10 @@ export const teams = pgTable("team", {
   currentPeriodEnd: timestamp("current_period_end", { mode: "date" }),
   /** Paddle's updated_at of the last subscription event applied; older events are ignored. */
   billingUpdatedAt: timestamp("billing_updated_at", { mode: "date" }),
+  /** Per-seat usage limits in US cents at list price; null = the plan default (src/lib/plans.ts). Set in Admin. */
+  limitDailyCents: integer("limit_daily_cents"),
+  limitWeeklyCents: integer("limit_weekly_cents"),
+  limitMonthlyCents: integer("limit_monthly_cents"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
 
@@ -146,10 +150,58 @@ export const jobs = pgTable(
     plan: text("plan").$type<Plan>().notNull(),
     /** Managed Agents session id (sesn_...). */
     sessionId: text("session_id"),
+    /** Member whose message (or approval) started the current turn: new cost is counted against them. */
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    /** Session list cost already written to usage_event, in US cents. */
+    billedCents: integer("billed_cents").notNull().default(0),
+    /** Spend ceiling currently set on the session, in US cents. */
+    budgetCents: integer("budget_cents"),
+    /** True while the session may still spend (a turn was started and its cost isn't fully counted yet). */
+    costOpen: integer("cost_open").notNull().default(0),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
-  (t) => [index("job_team_idx").on(t.teamId, t.createdAt)],
+  (t) => [index("job_team_idx").on(t.teamId, t.createdAt), index("job_actor_open_idx").on(t.actorId, t.costOpen)],
+);
+
+/** Model cost (list price, US cents) counted against a member; the basis of the daily/weekly/monthly limits. */
+export const usageEvents = pgTable(
+  "usage_event",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    jobId: text("job_id").references(() => jobs.id, { onDelete: "set null" }),
+    costCents: integer("cost_cents").notNull(),
+    /** Part of costCents beyond the member's limits, paid from the team's extra usage (top-up) balance. */
+    topupCents: integer("topup_cents").notNull().default(0),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("usage_event_member_idx").on(t.teamId, t.userId, t.createdAt)],
+);
+
+/** Extra usage bought through Paddle (one-time). Credit is model cost (list price, US cents) the team may use. */
+export const usageTopups = pgTable(
+  "usage_topup",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    /** Paddle transaction (txn_...); unique so a repeated notification can't credit twice. "admin:..." for grants. */
+    transactionId: text("transaction_id").notNull(),
+    /** What the customer paid, before tax, in US cents (price × quantity). */
+    paidCents: integer("paid_cents").notNull(),
+    creditCents: integer("credit_cents").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("usage_topup_txn_idx").on(t.transactionId), index("usage_topup_team_idx").on(t.teamId)],
 );
 
 export const jobFiles = pgTable(

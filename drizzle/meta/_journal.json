@@ -22,6 +22,20 @@
       "when": 1795373060635,
       "tag": "0002_paddle_billing",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795378069584,
+      "tag": "0003_usage_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795389806218,
+      "tag": "0004_usage_topups",
+      "breakpoints": true
     }
   ]
 }

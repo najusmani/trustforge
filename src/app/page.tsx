@@ -3,6 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteChrome";
 import { LogoMark } from "@/components/Logo";
+import { Presentation } from "@/components/Presentation";
 import { ARTICLES } from "@/lib/learn";
 import { cycleLabel, formatPrice, getPartnerPrice } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
@@ -67,6 +68,18 @@ const JOBS = [
   ["ODT questions", "Answered from the guides"],
 ];
 
+const COST_BEFORE = [
+  ["Tens to hundreds of thousands of dollars", "for a single FLEXCUBE customization through an implementation partner"],
+  ["Weeks of analysis and development", "before the first file reaches your ODT"],
+  ["Large partner teams", "tens to hundreds of developers billed by the hour across a programme"],
+];
+
+const COST_AFTER = [
+  ["Hundreds of dollars", "a Partner seat, with a daily, weekly and monthly usage allowance"],
+  ["Minutes to the first files", "radxml, CUSTOM hook packages, JavaScript and scripts, checked against ODT rules"],
+  ["Your own developers", "review, load, compile and test; TrustForge does the heavy lifting"],
+];
+
 const SAFETY = [
   ["Oracle’s code is never edited", "Changes go in the CUSTOM layer. Kernel values are checked and stay exactly as shipped."],
   ["Nothing without approval", "TrustForge shows the plan and the files it will make. Nothing is built until you agree."],
@@ -101,8 +114,16 @@ function faqFor(price: string, cycle: string) {
       a: "Yes. The free Learn guides cover ODT, radxml, new screens, the CUSTOM layer, hook packages and Silent ODT, and the Free plan answers ODT questions from the guides and reviews your radxml.",
     },
     {
+      q: "Which AI does TrustForge use?",
+      a: "TrustForge is an AI agent built on Anthropic’s AI, running on Anthropic’s platform with FLEXCUBE ODT knowledge, rules and checks built in. A private install can run on your bank’s own Anthropic, AWS Bedrock or Google Vertex account.",
+    },
+    {
+      q: "How much can TrustForge save on a FLEXCUBE customization?",
+      a: "Banks often pay tens to hundreds of thousands of dollars for a FLEXCUBE customization through an implementation partner. With TrustForge, the same change costs hundreds of dollars and the first files arrive in minutes, which can cut development cost by up to 90%. Your developers still review, deploy and test every change, and savings depend on the scope.",
+    },
+    {
       q: "How much does TrustForge cost?",
-      a: `The Free plan costs nothing and includes radxml reviews and ODT questions, 5 a month. The Partner plan is ${price} per seat per ${cycle} with all job types. Banks can also arrange a private install in their own cloud.`,
+      a: `The Free plan costs nothing and includes radxml reviews and ODT questions, 5 a month. The Partner plan is ${price} per seat per ${cycle} with all job types and a daily, weekly and monthly usage allowance for each seat. Banks can also arrange a private install in their own cloud.`,
     },
   ];
 }
@@ -173,6 +194,7 @@ export default async function Home() {
             </span>
           </Link>
           <div className={`${s.links} ${s.caps}`}>
+            <a href="#watch" className={s.hideSm}>Watch</a>
             <a href="#how" className={s.hideSm}>How it works</a>
             <Link href="/learn" className={s.hideSm}>Learn</Link>
             <a href="#plans">Plans</a>
@@ -188,18 +210,19 @@ export default async function Home() {
           <div className={`${s.wrap} ${s.heroInner}`}>
             <div className={s.heroGrid}>
               <div>
-                <span className={`${s.eyebrow} ${s.rise} ${s.r1}`}>AI for Oracle FLEXCUBE UBS 14.6 &amp; 14.7</span>
+                <span className={`${s.eyebrow} ${s.rise} ${s.r1}`}>AI agent for Oracle FLEXCUBE · Built on Anthropic</span>
                 <h1 id="hero-h" className={`${s.serif} ${s.h1} ${s.rise} ${s.r2}`}>
                   FLEXCUBE customizations,<br />
                   <em className={s.gold}>forged in conversation.</em>
                 </h1>
                 <p className={`${s.heroLead} ${s.rise} ${s.r3}`}>
-                  Describe the change and upload your objects. TrustForge asks what it needs, agrees a plan with you,
-                  and delivers radxml, CUSTOM hook packages, JavaScript and scripts ready to load in ODT.
+                  Describe the change and upload your objects. TrustForge, an AI assistant for FLEXCUBE UBS 14.6 and
+                  14.7, asks what it needs, agrees a plan with you, and delivers radxml, CUSTOM hook packages,
+                  JavaScript and scripts ready to load in ODT. Up to 90% less than the usual cost.
                 </p>
                 <div className={`${s.heroActions} ${s.rise} ${s.r4}`}>
                   <Link href="/app" className={s.btn}>Start your first job <Arrow /></Link>
-                  <a href="#how" className={s.textLink}>How it works</a>
+                  <a href="#watch" className={s.textLink}>Watch the 10-minute tour</a>
                 </div>
               </div>
               <aside className={`${s.heroAside} ${s.rise} ${s.r5}`} aria-label="From a recent job">
@@ -213,6 +236,20 @@ export default async function Home() {
           <div className={s.strip}>
             <div className={`${s.stripInner} ${s.caps}`}>
               <span>New screens</span><span>Customizations</span><span>Radxml review</span><span>Hook code</span><span>Silent ODT</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="watch" className={s.section} aria-labelledby="watch-h">
+          <div className={s.wrap}>
+            <div className={s.split}>
+              <span className={s.eyebrow}>Watch</span>
+              <h2 id="watch-h" className={`${s.serif} ${s.h2}`}>
+                TrustForge in <em className={s.gold}>ten minutes.</em>
+              </h2>
+            </div>
+            <div style={{ marginTop: 48 }}>
+              <Presentation />
             </div>
           </div>
         </section>
@@ -237,7 +274,50 @@ export default async function Home() {
           </div>
         </section>
 
-        <section id="build" className={`${s.section} ${s.navy} ${s.onNavy}`} aria-labelledby="build-h">
+        <section id="cost" className={`${s.section} ${s.navy} ${s.onNavy}`} aria-labelledby="cost-h">
+          <div className={s.wrap}>
+            <div className={s.split}>
+              <span className={s.eyebrow}>Cost</span>
+              <h2 id="cost-h" className={`${s.serif} ${s.h2}`}>
+                FLEXCUBE customization at a fraction of the cost. <em className={s.gold}>Up to 90% less.</em>
+              </h2>
+            </div>
+            <div className={s.costGrid}>
+              <div className={s.costCol}>
+                <span className={`${s.caps} ${s.costHead}`}>The usual way</span>
+                <ul className={s.costList}>
+                  {COST_BEFORE.map(([big, small]) => (
+                    <li key={big}>
+                      <strong className={s.serif}>{big}</strong>
+                      <span>{small}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className={`${s.costCol} ${s.costNew}`}>
+                <span className={`${s.caps} ${s.costHead}`}>With TrustForge</span>
+                <ul className={s.costList}>
+                  {COST_AFTER.map(([big, small]) => (
+                    <li key={big}>
+                      <strong className={s.serif}>{big}</strong>
+                      <span>{small}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className={s.costBig} aria-label="Up to 90 percent lower development cost">
+                <span className={`${s.serif} ${s.costPct}`}>90%</span>
+                <span className={s.costPctLabel}>up to 90% lower development cost</span>
+              </div>
+            </div>
+            <p className={s.costNote}>
+              Typical market figures for illustration. Savings depend on the scope of the change. Your team still reviews,
+              deploys and tests every change in its own environments.
+            </p>
+          </div>
+        </section>
+
+        <section id="build" className={`${s.section} ${s.ivory}`} aria-labelledby="build-h">
           <div className={`${s.wrap} ${s.split}`}>
             <div>
               <span className={s.eyebrow}>Capabilities</span>
@@ -327,6 +407,7 @@ export default async function Home() {
                 </div>
                 <ul className={s.points}>
                   <li>All six kinds of job</li>
+                  <li>Daily, weekly and monthly usage per seat</li>
                   <li>Start with one seat, add more any time</li>
                   <li>Shared job history for your team</li>
                 </ul>

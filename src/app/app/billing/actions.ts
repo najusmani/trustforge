@@ -2,7 +2,8 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { applySubscription, billingReady, paddle, paddleConfig } from "@/lib/paddle";
+import { applySubscription, billingReady, paddle, paddleConfig, topupReady } from "@/lib/paddle";
+import { TOPUP } from "@/lib/plans";
 import { getMembership, requireUser, seatsUsed } from "@/lib/teams";
 
 const PATH = "/app/billing";
@@ -55,6 +56,30 @@ export async function startCheckout(seatsInput: number): Promise<CheckoutStart> 
     return { ok: true, transactionId: tx.id, clientToken: cfg.clientToken, env: cfg.env };
   } catch (err) {
     console.error("[billing] transaction create failed", err);
+    return { ok: false, error: "Paddle couldn’t start the checkout. Please try again." };
+  }
+}
+
+/** One-time purchase of extra usage for the team (Partner, owner only). Credited when Paddle confirms payment. */
+export async function startTopup(unitsInput: number): Promise<CheckoutStart> {
+  const user = await requireUser(PATH);
+  const m = await getMembership(user.id);
+  if (!m || m.role !== "owner") return { ok: false, error: "Only the team owner can buy extra usage." };
+  if (m.team.plan !== "partner") return { ok: false, error: "Extra usage is for Partner teams." };
+  if (!topupReady()) return { ok: false, error: "Extra usage isn’t available yet. Please try again later." };
+  const units = Math.floor(Number(unitsInput));
+  if (!Number.isFinite(units) || units < 1 || units > TOPUP.maxUnits) return { ok: false, error: `Choose 1 to ${TOPUP.maxUnits}.` };
+  const cfg = paddleConfig();
+  try {
+    const tx = await paddle().transactions.create({
+      items: [{ priceId: cfg.topupPriceId, quantity: units }],
+      customData: { team_id: m.team.id, app: "trustforge", kind: "topup" },
+      ...(m.team.paddleCustomerId ? { customerId: m.team.paddleCustomerId } : {}),
+      checkout: { url: `${await origin()}${PATH}` },
+    });
+    return { ok: true, transactionId: tx.id, clientToken: cfg.clientToken, env: cfg.env };
+  } catch (err) {
+    console.error("[billing] top-up transaction failed", err);
     return { ok: false, error: "Paddle couldn’t start the checkout. Please try again." };
   }
 }

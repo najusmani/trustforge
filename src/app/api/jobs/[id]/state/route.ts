@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getJobForUser, getJobView } from "@/lib/jobs";
+import { memberUsage, recordCost } from "@/lib/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const withOutputs = new URL(req.url).searchParams.get("outputs") === "1";
   try {
     const view = await getJobView(found.job.sessionId, withOutputs);
+    // Count new cost against the member who started the current turn, then report this member's usage.
+    await recordCost(found.job, view.costCents ?? 0, view.status).catch((e) => console.error("[usage] record failed", e));
+    view.usage = await memberUsage(found.team, userId, { sync: false, exceptJobId: found.job.id }).catch(() => null);
     return NextResponse.json(view, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     console.error("[jobs] state failed", err);

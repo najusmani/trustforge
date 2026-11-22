@@ -6,6 +6,7 @@ import { jobFiles, jobMessages, jobs, type Plan, type Role, teams } from "@/db/s
 import { anthropic } from "@/lib/agent";
 import { getMembership } from "@/lib/teams";
 import { PLAN_CONFIG, UPLOAD_LIMITS } from "@/lib/plans";
+import type { MemberUsage } from "@/lib/usage";
 
 export const MANAGED_AGENTS_BETA = "managed-agents-2026-04-01" as const;
 
@@ -117,6 +118,8 @@ export type JobView = {
   pending: { eventId: string; name: string; detail: string }[];
   outputs: { id: string; filename: string; size: number }[];
   costCents: number | null;
+  /** The viewing member's usage against their limits (Partner); filled in by the state route. */
+  usage?: MemberUsage | null;
 };
 
 function toolDetail(name: string, input: Record<string, unknown>): string {

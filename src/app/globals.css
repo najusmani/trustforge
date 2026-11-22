@@ -157,6 +157,7 @@ select.input { appearance: auto; }
 .flash { margin: 0; padding: 12px 16px; font-size: 15px; line-height: 1.5; border: 1px solid; }
 .flash-ok { background: var(--ok-bg); border-color: #b9d8c6; color: var(--ok); }
 .flash-err { background: var(--err-bg); border-color: #e7c1bf; color: var(--err); }
+.flash-warn { background: var(--warn-bg); border-color: #ead7ae; color: var(--warn); }
 
 /* ---------- Workspace ---------- */
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--ivory); }
@@ -336,3 +337,22 @@ select.input { appearance: auto; }
 .article-related { margin-top: 44px; display: flex; flex-direction: column; gap: 12px; }
 .article-related a { font-family: var(--serif); font-size: 22px; color: var(--navy); text-decoration: none; border-bottom: 1px solid var(--hair); padding-bottom: 10px; }
 .article-related a:hover { color: var(--gold-text); }
+
+/* ---------- Usage meter (daily / weekly / monthly limits) ---------- */
+.usage { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px 32px; }
+.usage-compact { grid-template-columns: 1fr; gap: 16px; }
+.usage-row { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.usage-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.usage-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.usage-pct { font-family: var(--serif); font-size: 22px; color: var(--navy); }
+.usage-compact .usage-pct { font-size: 18px; }
+.usage-pct.warn { color: var(--warn); }
+.usage-pct.full { color: var(--err); }
+.usage-bar { height: 4px; background: var(--sand); overflow: hidden; }
+.usage-bar > span { display: block; height: 100%; background: var(--navy); transition: width 0.6s var(--ease); }
+.usage-bar > span.warn { background: var(--gold); }
+.usage-bar > span.full { background: var(--err); }
+.usage-reset { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .usage-bar > span { transition: none; } }
+
+.usage-extra { grid-column: 1 / -1; padding-top: 14px; border-top: 1px solid var(--hair); }

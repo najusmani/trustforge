@@ -9,7 +9,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 
 | ID | Symptom (search for this) | Short cause |
 |---|---|---|
-| L1 | `ST-AMND-002` on Modify, log `Cspks_Req_Utils :: In Pr_Log_Error :FLEXCUBE /ST-AMND-002/@<TABLE>.<COLUMN>` | Amendable INCs not generated |
+| L1 | `ST-AMND-002` on Modify, log `Cspks_Req_Utils :: In Pr_Log_Error :FLEXCUBE /ST-AMND-002/@<TABLE>.<COLUMN>` | Amendable INCs not generated: Amendable not ticked, or the CUSTOM layer has no `RAD_ACTIONS` |
 | L2 | New CUSTOM validations/defaulting silently do nothing after deploy | ODT's empty CUSTOM body compiled over the hand-written one |
 | L3 | `RD-VALS-027` on ODT save | PK column not a field of its data source |
 | L4 | `RD-VALS-60` on ODT save | Duplicate XSD tag on a new field |
@@ -21,13 +21,25 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Symptom:** Unlock -> change a new field -> Save fails with `ST-AMND-002`. The debug log lists the amendable
   fields after `Fn_Get_Amendable_Details` (`<TABLE>.<COLUMN>` lines ending with `LAST:FLEXCUBE/<FID>_MODIFY`) and
   the new table's columns are not in that list.
-- **Cause:** the radxml was right (`AMENDABLE_IN = MODIFY` on the new fields) but **Amendable** was not ticked on the
-  ODT Generate screen, so the zip had no `GWTM_AMEND_MASTER`, `GWTM_AMEND_NODES`, `GWTM_AMEND_FIELDS`,
-  `GWTB_AMEND_NODES`, `GWTB_AMEND_FIELDS` INCs and the database kept the old amendable list. ODT gives no warning.
-- **Fix:** regenerate with Amendable ticked, check `GWTB_AMEND_FIELDS` holds the new `<NODE_NAME>, <FIELD_NAME>` rows
-  for `<FID>_MODIFY`, compile the five INCs, commit, clear the app cache, retest Modify. No package recompile needed.
-- **Prevention:** `skills/odt-customize/scripts/check_odt_zip.py` (check `amend`) fails when any amendable field has no
-  row in GWTB/GWTM_AMEND_FIELDS. CHANGES.md always lists "run check_odt_zip.py on the generated zip" before deploy.
+- **Cause:** ODT generated no `GWTM_AMEND_MASTER`, `GWTM_AMEND_NODES`, `GWTM_AMEND_FIELDS`, `GWTB_AMEND_NODES`,
+  `GWTB_AMEND_FIELDS` INCs, so the database kept Oracle's amendable list. ODT gives no warning. Two ways this happens:
+  1. **Amendable** not ticked on the Generate screen.
+  2. **The release layer has no `RAD_ACTIONS` of its own** (found 2026-11-22: a regenerate with Amendable ticked still
+     produced no amend INCs). ODT builds the amendable INCs from the `RAD_ACTIONS` of the release being generated.
+     `RAD_FUNC_PREFERENCES`, `RAD_ACTIONS` and `RAD_SUMMARY` are copied whole into a layer only when that node is opened
+     and saved in that release; for a KERNEL function changed in CUSTOM, `RAD_CUSTOM` therefore lacks `RAD_ACTIONS`
+     unless someone opened Actions. The fields' `AMENDABLE_IN = MODIFY` alone is not enough. A new CUSTOM function
+     (STDCURSK) always has `RAD_ACTIONS` in `RAD_CUSTOM`, which is why it worked.
+- **Fix:** copy the kernel `RAD_ACTIONS` block unchanged into `RAD_CUSTOM` (or open Actions in ODT in the CUSTOM release
+  and Save), load, save, regenerate with Amendable ticked. Check `GWTB_AMEND_FIELDS` holds the new
+  `<NODE_NAME>, <FIELD_NAME>` rows for `<FID>_MODIFY` **and still holds the kernel fields**, compile the five INCs,
+  commit, clear the app cache, retest Modify. No package recompile needed.
+- **Prevention:**
+  - `../skills/odt-radxml/scripts/check_radxml.py` ERROR: a higher layer adds amendable fields but has no `RAD_ACTIONS`.
+  - `../skills/odt-customize/scripts/check_odt_zip.py` (check `amend`) fails when any amendable field has no row in
+    GWTB/GWTM_AMEND_FIELDS and names which of the two causes applies.
+  - Radxml rule: when a CUSTOM delta on a KERNEL function adds amendable fields, `RAD_CUSTOM` carries a whole copy of
+    the kernel `RAD_ACTIONS` (see `28-extending-kernel-function.md`).
 - **Not the cause:** `Other Label Not Found in Cstb_Other_Labels` for `@<TABLE>` in the same log is only the error
   message looking up a block label; harmless.
 

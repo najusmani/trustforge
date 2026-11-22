@@ -49,6 +49,7 @@ Other ODT versions: rebuild the skeleton from the user's own ODT saves, freshest
    - For repetitive clones (slot N -> N+1) write a builder script with an explicit name map and `--release` option (reference 28 section 4).
 3. Never delete or rename elements owned by an earlier release; set visible/active off instead.
 4. Keep references consistent (field set -> block fields, LOV binds/returns -> fields, screen args -> blocks/fields, summary -> block fields, amendables -> fields).
+4b. If the delta adds amendable fields (`AMENDABLE_IN`), copy the kernel `RAD_ACTIONS` whole and unchanged into `RAD_CUSTOM`; ODT generates amendable INCs only from the current layer's actions (lesson L1).
 5. Keep no XML declaration, tab indentation, CRLF. Run `check_radxml.py` again (it merges layers like ODT) and `python -I scripts/radxml_merge.py <file>`: kernel values changed and removed must both be 0.
 6. User loads in the CUSTOM release (Action = Load), opens each changed node, Save, Generate - ODT is the final validator.
 

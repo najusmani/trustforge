@@ -4,6 +4,8 @@ import { Arrow } from "@/components/Logo";
 import { listTeamJobs, questionsLeft } from "@/lib/jobs";
 import { JOB_TYPE_LABEL, PLAN_CONFIG } from "@/lib/plans";
 import { getMembership, requireUser, ROLE_LABEL, seatsUsed } from "@/lib/teams";
+import { UsageMeter } from "@/components/UsageMeter";
+import { limitReachedMessage, memberUsage } from "@/lib/usage";
 import { createTeam } from "./actions";
 
 const dateFmt = new Intl.DateTimeFormat("en", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -46,7 +48,13 @@ export default async function WorkspaceHome({
 
   const { team, role } = membership;
   const cfg = PLAN_CONFIG[team.plan];
-  const [jobList, left, used] = await Promise.all([listTeamJobs(team.id), questionsLeft(team.id, team.plan), seatsUsed(team.id)]);
+  const [jobList, left, used, usage] = await Promise.all([
+    listTeamJobs(team.id),
+    questionsLeft(team.id, team.plan),
+    seatsUsed(team.id),
+    memberUsage(team, user.id).catch(() => null),
+  ]);
+  const monthPct = usage ? Math.min(100, Math.round((usage.windows[2].usedCents / Math.max(1, usage.windows[2].limitCents)) * 100)) : 0;
 
   return (
     <div className="app-wide">
@@ -68,12 +76,21 @@ export default async function WorkspaceHome({
           <span className="stat-label">Plan</span>
           <span className="stat-value">{cfg.label}</span>
         </div>
-        <div className="card stat">
-          <span className="stat-label">Questions this month</span>
-          <span className="stat-value">
-            {left === null ? "Unlimited" : <>{left} <small>of {cfg.questionsPerMonth} left</small></>}
-          </span>
-        </div>
+        {usage ? (
+          <div className="card stat">
+            <span className="stat-label">Your usage this month</span>
+            <span className="stat-value">
+              {monthPct}% <small>of your limit</small>
+            </span>
+          </div>
+        ) : (
+          <div className="card stat">
+            <span className="stat-label">Questions this month</span>
+            <span className="stat-value">
+              {left === null ? "Unlimited" : <>{left} <small>of {cfg.questionsPerMonth} left</small></>}
+            </span>
+          </div>
+        )}
         <Link className="card stat stat-link lift" href="/app/team">
           <span className="stat-label">Team · {ROLE_LABEL[role]}</span>
           <span className="stat-value">
@@ -81,6 +98,19 @@ export default async function WorkspaceHome({
           </span>
         </Link>
       </section>
+
+      {usage && (
+        <section className="card panel enter d3" aria-labelledby="usage-h">
+          <h2 id="usage-h" className="panel-h" style={{ fontSize: 22 }}>Your usage</h2>
+          {usage.blocked && (
+            <p className="flash flash-err" style={{ margin: 0 }}>
+              {limitReachedMessage(usage.blocked)}{" "}
+              {role === "owner" && <Link href="/app/billing#extra">Add extra usage</Link>}
+            </p>
+          )}
+          <UsageMeter usage={usage} />
+        </section>
+      )}
 
       {jobList.length === 0 ? (
         <section className="card enter d3 empty-state">

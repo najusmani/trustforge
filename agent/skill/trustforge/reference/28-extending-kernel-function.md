@@ -16,6 +16,7 @@ See `radxml_merge.py` (port of `customOnKernel` in `RadDeltaHandler_NonIE.js`).
 - Adding children to an existing kernel node (fields to a block, a tab to `CVS_MAIN/BODY`, columns to a data source) -> repeat the parent node in `RAD_CUSTOM` with the same ID **and its kernel leaf values unchanged**, plus only the new children. ODT copies every leaf present in the CUSTOM node over the kernel node, so an empty or different leaf silently changes the kernel. Same for `HEADER/BODY/FOOTER` and `RAD_TABS`, which merge recursively.
 - A child with an existing ID is replaced whole.
 - `RAD_FUNC_PREFERENCES`, `RAD_ACTIONS`, `RAD_SUMMARY` are copied whole into each layer.
+- **New amendable fields need `RAD_ACTIONS` in the layer.** ODT generates the amendable INCs from the `RAD_ACTIONS` of the release being generated, so a CUSTOM delta that adds amendable fields must carry a whole, unchanged copy of the kernel `RAD_ACTIONS` in `RAD_CUSTOM`. Without it, Modify fails with ST-AMND-002 (lesson L1 in `29-lessons-learned.md`).
 - Verify "nothing broken": `python -I radxml_merge.py <out>_RAD.xml` must report `kernel leaf values changed: 0 removed: 0`. `check_radxml.py` runs the same merge and warns on any change.
 
 ## 3. ODT save errors seen and their causes
