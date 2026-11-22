@@ -1,8 +1,8 @@
 # TrustForge website
 
-Public website for TrustForge (TrustRoute Technologies): home page, early-access sign-up, terms and privacy.
-Built with Next.js 15 (App Router), React 19 and TypeScript. The design follows the "forge" mock
-(`../marketing/website/project/Home.dc.html`).
+Website and workspace for TrustForge (TrustRoute Technologies): home page, early-access sign-up, sign-in,
+teams, terms and privacy. Built with Next.js 15 (App Router), React 19, TypeScript, Auth.js v5 and Drizzle ORM
+on Postgres. The design follows the "forge" mock (`../marketing/website/project/Home.dc.html`).
 
 ## Pages
 | Path | What it is |
@@ -10,26 +10,43 @@ Built with Next.js 15 (App Router), React 19 and TypeScript. The design follows 
 | `/` | Home page |
 | `/early-access` | Sign-up form (`?plan=free`, `partner` or `private` preselects a plan) |
 | `/api/early-access` | Receives the form and emails it through Resend |
+| `/sign-in` | Email-link sign-in (no passwords). The same link creates an account |
+| `/app` | Workspace home: create a team, then the jobs area (job workspace not built yet) |
+| `/app/team` | People, roles (owner, admin, member), invites, seats |
+| `/invite/<token>` | Accept a team invite (must be signed in with the invited email) |
 | `/terms`, `/privacy` | Placeholders until legal counsel provides the texts |
+
+## Teams and seats
+- Every user belongs to one team. The person who creates it is the owner.
+- Owners and admins invite by email; only the owner can invite or remove admins and change seats.
+- Each member and each waiting invite uses a seat. Invites expire after 7 days.
+- Until Stripe billing is connected, the owner sets the seat count on the Team page.
 
 ## Run on this PC
 ```
 npm install
 npm run dev
 ```
-Open http://localhost:3000. Without email settings, sign-ups are printed in the terminal.
+Open http://localhost:3000. With no `DATABASE_URL`, an embedded Postgres in `./.data/pglite` is created
+and migrated automatically. Without email settings, sign-in links, invites and sign-ups are printed in the
+terminal instead of being sent. `.env.local` needs `AUTH_SECRET` (`npx auth secret` writes one).
+If the dev server is killed abruptly the local database can be left damaged (`npm run dev` fails with
+`Failed query: CREATE SCHEMA ... Aborted()`); delete `./.data/pglite` (test data only) and start again.
+
+## Database
+- Schema: `src/db/schema.ts`. After changing it: `npm run db:generate` (writes SQL to `./drizzle`).
+- `npm run dev` and `npm run build` apply pending migrations first (`scripts/migrate.mjs`).
 
 ## Settings
-Copy `.env.example` to `.env.local` and fill it in. In production, set the same names in the hosting
-provider. Without them, the sign-up form refuses requests in production rather than losing them.
+See `.env.example`. In production set them in the hosting provider:
+`AUTH_SECRET`, `DATABASE_URL`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM` (or `EARLY_ACCESS_FROM`), `EARLY_ACCESS_TO`.
+Without `DATABASE_URL` the public pages still work, but sign-in and the workspace don't.
 
 ## Deploy (Vercel)
-1. Push this folder to a GitHub repository.
-2. In Vercel: Add New > Project > import the repository. Framework preset: Next.js. No build settings to change.
-3. Add the environment variables from `.env.example`.
-4. Domains: add `trustforge.trustroutetechnologies.com`. In GoDaddy (My Products > trustroutetechnologies.com >
-   DNS), add a CNAME record named `trustforge` with the value Vercel shows. Leave the existing `@`, MX and TXT
-   records alone.
+1. Push to GitHub (`najusmani/trustforge`, branch `main`); Vercel deploys every push.
+2. Settings > Environment Variables: the names above, for Production.
+3. Domains: `forge.trustroutetechnologies.com`. In GoDaddy (My Products > trustroutetechnologies.com > DNS),
+   add a CNAME record named `forge` with the value Vercel shows. Leave the existing `@`, MX and TXT records alone.
 
 ## Not built yet
-The product itself (sign-in, jobs, chat with TrustForge, billing). See `../HANDOFF.md`.
+The job workspace (chat with TrustForge, uploads, builds), Stripe billing. See `../HANDOFF.md`.

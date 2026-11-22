@@ -13,12 +13,12 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "sw
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://trustforge.trustroutetechnologies.com"),
+  metadataBase: new URL("https://forge.trustroutetechnologies.com"),
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "TrustForge",
-    url: "https://trustforge.trustroutetechnologies.com",
+    url: "https://forge.trustroutetechnologies.com",
   },
   title: {
     default: "TrustForge: FLEXCUBE customizations, forged in conversation",

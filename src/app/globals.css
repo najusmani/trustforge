@@ -279,3 +279,48 @@ textarea.input { padding: 12px 14px; min-height: 110px; resize: vertical; line-h
   .nav-links { gap: 14px; }
   .hide-sm { display: none; }
 }
+
+/* ---------- Signed-in workspace ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.app-header { border-bottom: 1px solid var(--line); background: rgba(7, 10, 14, 0.9); padding: 0 24px; }
+.app-header-inner { max-width: 1200px; margin: 0 auto; min-height: 64px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 10px 0; }
+.app-nav { display: flex; gap: 22px; font-size: 15px; }
+.app-user { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 14px; }
+.app-team { color: var(--accent-soft); font-size: 13px; padding: 4px 10px; border: 1px solid var(--ember-line); border-radius: 999px; }
+.app-email { color: var(--text-2); }
+.app-main { flex: 1 1 auto; padding: 48px 24px 96px; }
+.app-narrow { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.app-wide { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.app-h1 { margin: 0; font-family: var(--font-fraunces), serif; font-size: clamp(34px, 4vw, 48px); line-height: 1.04; font-weight: 500; letter-spacing: -0.025em; }
+.empty-state { padding: 30px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(160deg, rgba(255, 138, 61, 0.09), rgba(18, 24, 33, 0.92) 60%); border-color: var(--ember-line); }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.stat { padding: 20px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text); }
+.stat-link:hover { color: var(--text); }
+.stat-label { font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+.stat-value { font-family: var(--font-fraunces), serif; font-size: 28px; font-weight: 500; }
+.stat-value small { font-family: var(--font-geist), sans-serif; font-size: 15px; color: var(--text-3); }
+.seat-pill { font-size: 14px; color: var(--text-2); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-3); background: var(--panel-solid); }
+.seat-pill strong { color: var(--accent-hi); }
+.panel { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.panel-h { margin: 0; font-family: var(--font-fraunces), serif; font-size: 24px; font-weight: 500; }
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.table th { text-align: left; font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--line-2); }
+.table td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.table td.mono { font-size: 14px; }
+.table-caption { text-align: left; caption-side: top; padding: 0 0 8px; font-size: 14px; color: var(--text-2); }
+.you { color: var(--text-3); }
+.invite-form { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-start; }
+.link-btn { background: none; border: none; padding: 8px 4px; min-height: 36px; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent-hi); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.link-btn.danger { color: #fca5a5; }
+select.input { appearance: auto; }
+.flash { margin: 0; padding: 12px 16px; border-radius: 10px; font-size: 15px; line-height: 1.5; }
+.flash-ok { background: rgba(52, 211, 153, 0.08); border: 1px solid var(--ok-line); color: #c9f5de; }
+.flash-err { background: rgba(252, 165, 165, 0.08); border: 1px solid #6b2a2a; color: #fecaca; }
+@media (max-width: 640px) {
+  .app-header { padding: 0 16px; }
+  .app-main { padding: 32px 16px 72px; }
+  .app-email { display: none; }
+}
