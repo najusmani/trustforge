@@ -1,0 +1,9 @@
+# 07 Notifications
+- Purpose: push business events as XML to external systems' async queues. Prereqs: notification framework installed, ODT mapped to env, required Query web service developed.
+- Spec checklist: notification function id (3rd char N, e.g. `STNCUMOD`, `FTNCONON`), notification code (`NOTIF_<MODULE>_<DESC>`, e.g. `NOTIF_CA_CUSTACC_MOD`), base table + operation + filter, query web service/operation/request node (e.g. FCUBSAccService / QueryCustAcc / Cust-Account-IO).
+- One trigger per base table, shared by notifications.
+- **Notification Trigger** screen (New/Modify): Trigger Code `TRG_...`, Description, Firing Time (BEFORE/AFTER), Each Record (row vs statement level), Base Table, Pk Cols/Pk Types (`~`), Trigger When Clause (no subqueries), Notification Codes (blank if shared). Generates `gwtr#_<trg>.trg` + `GWTM_NOTIFICATION_TRIGGERS__<trg>.INC`.
+- **Notifications** screen (New/Load): Save Xml Path, Notification Function, Notification Code, Description, Module, Notification XSD (`<Module>-<Desc>-Notif.xsd`, only if no gateway query op), Base Table, Firing Time (Insert/Update/Both), Filter Type (Where clause / Plsql block), Pk Cols/Types, Gateway Operation/Service/IO Request, Type XSD Name (e.g. `LC-Contract-Types.xsd`), Full Screen Reply (vs PK only), HO only, Filter Logic, Web service Tags (base table columns forming the XML when no query service).
+- Deploy: main package + hooks + `GWTM_NOTIFICATION_TAG_MAP___<FID>_.INC` + `GWTM_NOTIFICATIONS_MASTER___<FID>_.INC`; trigger `.INC` + `.TRG`.
+- Runtime: trigger inserts into STTB_NOTIFICATION; FCJ scheduler job polls, locks, checks, builds pre-notification XML to internal JMS NOTIFY_QUEUE; Gateway notification MDB picks it, resolves schema by JNDI in message, builds full notification via gateway package, sends to destination queue/topic; rollback on error. Test: change base table, check STTB_NOTIFICATION, then `GWTBS_NOTIFICATIONS_LOG.NOTIFICATION_MESSAGE`.
+

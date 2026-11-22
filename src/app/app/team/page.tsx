@@ -157,10 +157,11 @@ export default async function TeamPage({
         <section className="card enter d4 panel" aria-labelledby="seats-h">
           <h2 id="seats-h" className="panel-h">Seats</h2>
           <p className="lead" style={{ fontSize: 15 }}>
-            Each person or waiting invite uses one seat. Partner is $500 USD per seat per month. Billing isn’t connected
-            yet, so you can set the number of seats here for now.
+            {team.plan === "free"
+              ? "Your team is on the Free plan, which includes 1 seat. Partner adds seats for your team at $500 USD per seat per month; contact TrustRoute to move to Partner."
+              : "Each person or waiting invite uses one seat, at $500 USD per seat per month. Billing isn’t connected yet, so you can set the number of seats here for now."}
           </p>
-          <form action={setSeats} className="invite-form">
+          {team.plan === "partner" && <form action={setSeats} className="invite-form">
             <div className="field" style={{ flex: "0 1 160px" }}>
               <label htmlFor="seats">Seats</label>
               <input className="input" id="seats" name="seats" type="number" min={Math.max(1, used)} max={100} defaultValue={team.seats} inputMode="numeric" />
@@ -168,7 +169,7 @@ export default async function TeamPage({
             <button type="submit" className="btn btn-ghost btn-sm" style={{ alignSelf: "flex-end", minHeight: 48 }}>
               Update seats
             </button>
-          </form>
+          </form>}
         </section>
       )}
     </div>

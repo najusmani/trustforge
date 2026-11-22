@@ -1,0 +1,5 @@
+# 16 Launch Forms and Others Screens
+- **Launch Form**: a normal maintenance or transaction screen used from other screens for viewing only (e.g. contract events CSDEVENT, CSDACCNT). 3rd char D, 8 chars; independently launchable, so needs full menu incl. SMTB_FUNCTION_DESCRIPTION. Maintenance launch forms from maintenance screens, transaction from transaction.
+  - Main screen Screen Arguments: ACTION_CODE = EXECUTEQUERY + PK values. All normal units generated, BUT CSTB_CALL_FORM_NODES row must be inserted manually with SCREEN_ARGS `~`-separated. Attach in Launch Form node, pass args, launch via button. Query customizations go in Fn_Post_Query.
+- **Others** (Function Category OTHERS): generated package only converts TS to composite and back; all logic in hook packages (e.g. batch screens). 3rd char D. Custom actions via buttons: release JS sets a user-defined action code (e.g. `NET_BATCH` in `fn_batch()` of STDCSNET_CLUSTER.js), builds request XML, sends, processes response; backend handles that action code in `Fn_Main` of the release hook package (stpks_stdcsnet_cluster.sql). Skip handlers available.
+

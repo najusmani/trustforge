@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { Flash } from "@/components/Flash";
 import { Arrow } from "@/components/Logo";
+import { listTeamJobs, questionsLeft } from "@/lib/jobs";
+import { JOB_TYPE_LABEL, PLAN_CONFIG } from "@/lib/plans";
 import { getMembership, requireUser, ROLE_LABEL, seatsUsed } from "@/lib/teams";
 import { createTeam } from "./actions";
+
+const dateFmt = new Intl.DateTimeFormat("en", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 export default async function WorkspaceHome({
   searchParams,
@@ -41,44 +45,72 @@ export default async function WorkspaceHome({
   }
 
   const { team, role } = membership;
-  const used = await seatsUsed(team.id);
+  const cfg = PLAN_CONFIG[team.plan];
+  const [jobList, left, used] = await Promise.all([listTeamJobs(team.id), questionsLeft(team.id, team.plan), seatsUsed(team.id)]);
 
   return (
     <div className="app-wide">
       <Flash error={error} notice={notice} />
-      <div className="enter d1" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <span className="eyebrow">{team.name}</span>
-        <h1 className="app-h1">
-          Your <em className="ember">jobs</em>
-        </h1>
+      <div className="enter d1" style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <span className="eyebrow">{team.name}</span>
+          <h1 className="app-h1">
+            Your <em className="ember">jobs</em>
+          </h1>
+        </div>
+        <Link className="btn btn-primary" href="/app/jobs/new">
+          New job <Arrow />
+        </Link>
       </div>
 
-      <section className="card enter d2 empty-state">
-        <h2 className="serif" style={{ margin: 0, fontSize: 26, fontWeight: 500 }}>The job workspace is on its way</h2>
-        <p className="lead" style={{ fontSize: 16 }}>
-          Soon you’ll start jobs here: describe the change, upload your objects, agree the plan with TrustForge and
-          download files ready for ODT. Your team is set up and ready for it.
-        </p>
-      </section>
-
-      <section className="stat-row enter d3" aria-label="Team summary">
+      <section className="stat-row enter d2" aria-label="Plan summary">
         <div className="card stat">
-          <span className="stat-label">Your role</span>
-          <span className="stat-value">{ROLE_LABEL[role]}</span>
+          <span className="stat-label">Plan</span>
+          <span className="stat-value">{cfg.label}</span>
         </div>
         <div className="card stat">
-          <span className="stat-label">Seats in use</span>
+          <span className="stat-label">Questions this month</span>
           <span className="stat-value">
-            {used} <small>of {team.seats}</small>
+            {left === null ? "Unlimited" : <>{left} <small>of {cfg.questionsPerMonth} left</small></>}
           </span>
         </div>
         <Link className="card stat stat-link lift" href="/app/team">
-          <span className="stat-label">Team</span>
-          <span className="stat-value" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            Manage <Arrow />
+          <span className="stat-label">Team · {ROLE_LABEL[role]}</span>
+          <span className="stat-value">
+            {used} <small>of {team.seats} seat{team.seats === 1 ? "" : "s"}</small>
           </span>
         </Link>
       </section>
+
+      {jobList.length === 0 ? (
+        <section className="card enter d3 empty-state">
+          <h2 className="serif" style={{ margin: 0, fontSize: 26, fontWeight: 500 }}>No jobs yet</h2>
+          <p className="lead" style={{ fontSize: 16 }}>
+            {team.plan === "free"
+              ? "Start with a radxml review or a question about ODT. Your plan includes 5 questions a month."
+              : "Describe a change, upload your objects, agree the plan with TrustForge and download files ready for ODT."}
+          </p>
+          <div>
+            <Link className="btn btn-solid btn-sm" href="/app/jobs/new">Start your first job</Link>
+          </div>
+        </section>
+      ) : (
+        <section className="card enter d3 panel" aria-labelledby="jobs-h">
+          <h2 id="jobs-h" className="panel-h">Recent jobs</h2>
+          <ul className="job-list">
+            {jobList.map((j) => (
+              <li key={j.id}>
+                <Link href={`/app/jobs/${j.id}`} className="job-row">
+                  <span className="job-title">{j.title}</span>
+                  <span className="job-meta">
+                    {JOB_TYPE_LABEL[j.jobType]} · UBS {j.release} · {dateFmt.format(j.updatedAt)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

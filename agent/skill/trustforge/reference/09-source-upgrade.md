@@ -1,0 +1,7 @@
+# 09 Source Upgrade (Refresh)
+- Refresh node: Source File List (txt of absolute radxml paths), Base File List (txt of matching base radxmls, same order), File Location (client/server), Refresh Type, Source/Base Release Type. Save mode must be Client or Server path (no Zip). Output: refreshed files in `RADXML` subfolder next to source; Refresh Log + Refresh Report. Regenerate ALL units and unit test afterwards.
+- **Child Refresh**: child radxml gets latest parent changes, child overrides kept; same release; do before development cut / baselining.
+- **Screen Child Refresh**: same for screen child; child-refresh the parent first if the parent is itself a child; only front-end units generated for screen child.
+- **Source Refresh** (upgrade): customer custom/cluster radxmls onto newer base. Extensible screens only. Source type Cluster with base Kernel; source Custom with base Kernel or Cluster; never same type. Child/screen-child refresh happens implicitly, so include parents in lists. After refresh: regenerate system units, deploy, and compile base release's kernel (and cluster) hook packages/JS.
+- **Not handled by Source Refresh** (manual fix): parent LOV modified after child refresh; data type/length changes made in custom and later in kernel; custom attribute (radio/select) changes in both layers; naming conflicts across layers/parent-child (use per-layer prefixes e.g. custom field sets `FST_U...`); Summary nodes are never upgraded.
+

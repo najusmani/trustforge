@@ -1,0 +1,4 @@
+# 10 Tracking Changes
+- **View Changes**: load a radxml; highlights per node what the current layer (child/cluster/custom) changed: blue = modified, green = new.
+- **Change Report**: Source + Base file lists; Comparison Type Function Specific (same function id across releases) or Parent Child; optional Order Changes (FIELD_ORDER, FIELDSET_ORDER, TAB_ORDER, SEC_ORDER, DATA_BLK_ORDER, BLK_FIELD_ORDER). Compared nodes: PREFERENCES, MENU_DETAILS, DATASOURCES, COLUMNS, LOVS, LOV_DETAILS, DATA_BLOCKS, BLOCK_FIELDS, DATASOURCES_ATTACHED, CUSTOM_ATTRIBUTES, LOV_RETURN_FIELDS, LOV_BIND_VARS, FIELD_EVENTS, LOV_OFF_LINE_BIND_VARS, LOV_OFF_LINE_RETURN_FIELDS, SCREENS, SCREEN_ARGUMENTS, TABS, SECTIONS, PARTITIONS, FIELDSETS, FIELDSET_FIELDS, SUMMARY, SUMMARY_DETAILS, LAUNCHFORMS, CALLFORMS, ACTIONS, WEB_SERVICES. Output Excel per function with status NEW / MODIFIED / DELETED and old/new values, plus comparison log/report.
+

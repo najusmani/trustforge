@@ -133,6 +133,7 @@ export async function setSeats(formData: FormData) {
   const user = await requireUser("/app/team");
   const m = await getMembership(user.id);
   if (!m || m.role !== "owner") back("/app/team", "error", "Only the owner can change seats.");
+  if (m.team.plan === "free") back("/app/team", "error", "The Free plan includes 1 seat. Contact TrustRoute to move to Partner.");
   const seats = Number(formData.get("seats"));
   if (!Number.isInteger(seats) || seats < 1 || seats > 100) back("/app/team", "error", "Seats must be 1 to 100.");
   const used = await seatsUsed(m.team.id);

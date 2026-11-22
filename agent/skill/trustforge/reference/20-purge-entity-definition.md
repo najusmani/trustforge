@@ -1,0 +1,8 @@
+# 20 Purge Entity Definition
+- New purge framework: configuration (ODT "Purge Generation" node; persisted as radxml) + execution. Entity = parent table + PK/types, child tables + relations + key types, behaviour (delete/archive), mode, archive suffix, filters.
+- Header: Action New/Load, Save XML Path, Entity Name, Module, Entity ID auto `<MODULE>P<ENTITY>` (e.g. `FTPCONTRACT`).
+- **Purge Master**: Entity Description, Purge Type (Delete / Archive = copy to archive table then delete), Purge Mode (Entity = record level / Bulk), Frequency (Ad-hoc, Daily, Weekly, Monthly, Quarterly, Yearly), Archive Table Suffix (MAIN_TABLE + HIST = MAIN_TABLE_HIST).
+- **Purge Tables**: Table Name, Master, Parent, Relation with Parent, Key Fields + data types (`P` button populates), Archiving Not Required, Exclude from Purging.
+- **Purge Filters**: Business (business/regulatory), Execution (extra predicate for ad-hoc purge), Free Format (predefined, read-only). Fields: Filter Name (unique per entity across business+execution), Data Type (Date/String/Number), Scope (Table = table + children / Entity = skip whole entity if false), Filter Expression (Builder), Operator, Default Value (`~` for multiple), Max Length; Final Filter Expression = all ANDed. Example RETENTION: `GLOBAL.APPLICATION_DATE - CSTB_CONTRACT.BOOK_DATE` Greater Than 120, NUMBER, length 5.
+- Generated: main package (keys into a staging table, multithreaded purge, staging cleared), hooks (post filter-value derivation, pre/post program level, pre/post record level), static scripts STTM_PURGE_MASTER, STTM_PURGE_TBL_DETAILS, STTM_PURGE_FILTER_DETAILS (guide 05 says STTM_PURGE_FILTERS), archive table DDL (+ synonyms). No front-end units.
+
