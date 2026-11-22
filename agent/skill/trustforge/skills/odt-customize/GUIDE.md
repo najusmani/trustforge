@@ -61,11 +61,11 @@ For large or ambiguous requirements, show the design to the user and wait for ag
 
 ## Step 5 - Build artifacts
 
-Use the specialised skills' instructions (read their SKILL.md):
-- Radxml design/edit/review: `../odt-radxml/SKILL.md`
-- Hook packages and release JS: `../odt-hook-code/SKILL.md`
-- Labels, DDL, manual static data (CSTB_LABELS, CSTB_CALL_FORM_NODES for launch forms, upload tables): `../odt-static-data/SKILL.md`
-- Silent ODT / bulk generation / refresh / SOAP / REST generation configs: `../odt-silent/SKILL.md`
+Use the specialised skills' instructions (read their GUIDE.md):
+- Radxml design/edit/review: `../odt-radxml/GUIDE.md`
+- Hook packages and release JS: `../odt-hook-code/GUIDE.md`
+- Labels, DDL, manual static data (CSTB_LABELS, CSTB_CALL_FORM_NODES for launch forms, upload tables): `../odt-static-data/GUIDE.md`
+- Silent ODT / bulk generation / refresh / SOAP / REST generation configs: `../odt-silent/GUIDE.md`
 
 Output layout:
 ```
@@ -88,7 +88,7 @@ Hard rules:
 
 ## Step 6 - Validate
 
-Run the review checklist in `../odt-radxml/SKILL.md` against the customized radxml and design. Also check PL/SQL compiles logically: every function in the spec exists in the body with the same signature as the MAIN spec expects; every branch returns; error codes populated on failure. Fix issues before delivering.
+Run the review checklist in `../odt-radxml/GUIDE.md` against the customized radxml and design. Also check PL/SQL compiles logically: every function in the spec exists in the body with the same signature as the MAIN spec expects; every branch returns; error codes populated on failure. Fix issues before delivering.
 
 ## Step 7 - Deliver
 

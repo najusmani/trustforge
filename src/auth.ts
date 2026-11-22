@@ -26,11 +26,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.AUTH_EMAIL_FROM || process.env.EARLY_ACCESS_FROM,
       maxAge: 15 * 60, // sign-in links expire after 15 minutes
       async sendVerificationRequest({ identifier, url }) {
+        // Link to a confirm page, not the one-time callback itself, so email scanners can't use it up.
+        const confirmUrl = `${new URL(url).origin}/sign-in/confirm?link=${encodeURIComponent(url)}`;
         const { html, text } = buttonEmail({
           heading: "Sign in to TrustForge",
-          body: "Click the button to sign in. The link works once and expires in 15 minutes.",
+          body: "Click the button, then press Sign in on the page that opens. The link expires in 15 minutes.",
           button: "Sign in",
-          url,
+          url: confirmUrl,
           footer: "If you didn’t ask to sign in, you can ignore this email.",
         });
         await sendEmail({ to: identifier, subject: "Your TrustForge sign-in link", html, text });

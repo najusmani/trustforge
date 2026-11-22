@@ -10,11 +10,11 @@ This skill folder holds everything needed for FLEXCUBE ODT work. Paths below are
 ## Pick the guide for the job
 | Job | Read first |
 |---|---|
-| Customize an existing function, or create a new screen (end to end) | `skills/odt-customize/SKILL.md` (it calls the others) |
-| Design, edit or review a radxml | `skills/odt-radxml/SKILL.md` |
-| CUSTOM hook package (`<MOD>PKS_<FID>_CUSTOM`) or release JS (`<FID>_CUSTOM.js`) | `skills/odt-hook-code/SKILL.md` |
-| Labels, DDL, launch-form nodes, upload tables, error messages | `skills/odt-static-data/SKILL.md` |
-| Silent ODT (bulk generation, refresh, SOAP/REST) | `skills/odt-silent/SKILL.md` |
+| Customize an existing function, or create a new screen (end to end) | `skills/odt-customize/GUIDE.md` (it calls the others) |
+| Design, edit or review a radxml | `skills/odt-radxml/GUIDE.md` |
+| CUSTOM hook package (`<MOD>PKS_<FID>_CUSTOM`) or release JS (`<FID>_CUSTOM.js`) | `skills/odt-hook-code/GUIDE.md` |
+| Labels, DDL, launch-form nodes, upload tables, error messages | `skills/odt-static-data/GUIDE.md` |
+| Silent ODT (bulk generation, refresh, SOAP/REST) | `skills/odt-silent/GUIDE.md` |
 | A question about ODT | `reference/INDEX.md`, then `reference/00-cheat-sheet.md`, then only the files INDEX.md points to |
 
 Knowledge base: `reference/` (condensed from Oracle's ODT 14.7 guides; `27-radxml-format.md` and
