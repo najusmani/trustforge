@@ -202,12 +202,13 @@ for n, l in lovs.items():
 # ---- OBPM (Oracle Banking Payments) screens: OBPM's own tables, not the FCUBS ones (reference 30, 4.1)
 module = (root.findtext('.//MODULE_ID') or '').upper()
 if module in ('PM', 'PX'):
-    # lesson L9: Java Classes on Generate is disabled unless the screen's Preferences tick "Java functions"
-    jf = [e.text for e in cons.iter('JAVA_PAYEMNTS_FUNCTION')]
+    # lesson L9: Java Classes on Generate is disabled unless the screen's Preferences tick "Java functions",
+    # which ODT saves as ELCM_FUNCTION = Y (not JAVA_PAYEMNTS_FUNCTION)
+    jf = [e.text for e in cons.iter('ELCM_FUNCTION')]
     if 'Y' not in jf:
-        warns.append(f'OBPM module {module}: JAVA_PAYEMNTS_FUNCTION is not Y - ODT disables "Java Classes" on Generate. '
+        warns.append(f'OBPM module {module}: ELCM_FUNCTION is not Y - ODT disables "Java Classes" on Generate. '
                      'For a Java back end tick "Java functions" in the screen Preferences (spec preferences '
-                     'JAVA_PAYEMNTS_FUNCTION = Y); lesson L9')
+                     'ELCM_FUNCTION = Y, MODULE_GROUP_ID = FCPMTS); lesson L9')
     obpm_tables = (
         (r'\bCYTMS?_CCY_DEFN\b', 'CYTM_CCY_DEFN_MASTER (OBPM currency table)'),
         (r'\bSTTMS?_CUSTOMER\b', 'STTM_CORE_CUSTOMER (OBPM customer table; category = customer service model)'),

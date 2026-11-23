@@ -86,7 +86,7 @@ example adds a custom table to an existing screen:
    - The key column that links to the parent must be a block field **and** in a field set. It may be hidden.
    - It must be listed in **Block PK Columns**.
 5. Add a field set and place it in a section (header or body).
-6. Tick **Java functions** in the screen's own **Preferences** node (radxml `JAVA_PAYEMNTS_FUNCTION = Y`), then
+6. Tick **Java functions** in the screen's own **Preferences** node (saved as radxml `ELCM_FUNCTION = Y`, `MODULE_GROUP_ID = FCPMTS`), then
    Generate with **Java Classes** ticked. Without the preference the Java Classes box is disabled (lesson L9). The local RAD
    utility can also be used.
 7. Add the generated artifacts to the project and deploy the Java classes, UIXML and JS.
@@ -105,17 +105,28 @@ present as a field, the Block PK Columns are generated, and only the custom laye
 OBPM's own maintenances (`PMD*`) are Java functions, not PL/SQL. **Design a new OBPM maintenance with Java
 functions** and put its validations in Java; offer the PL/SQL hook package of section 3 only as an alternative the
 user chooses. Copy the pattern of a similar shipped screen (for a customer-keyed rule: `PMDCSMLK`).
-- **Switch it on:** screen Preferences > **Java functions** (`RAD_FUNC_PREFERENCES/JAVA_PAYEMNTS_FUNCTION = Y`);
-  only then is **Java Classes** enabled on Generate (lesson L9).
-- **Generated units per screen:** def class `com.ofss.pmts.pm.def.<FID>` (PMCommon.jar), DTO
-  `com.ofss.pmts.pm.dto.<Name>Dto`, entity `com.ofss.pmts.pm.<Name>`, `<Name>Kernel`, `<Name>KernelSys`,
-  `<Name>KernelSysDao`, `<Name>Assembler`; in a CUSTOM release also `<Name>Custom` (and `CustomSys`).
+- **Switch it on:** screen Preferences > **Java functions** (saved as `RAD_FUNC_PREFERENCES/ELCM_FUNCTION = Y`, not
+  `JAVA_PAYEMNTS_FUNCTION`); only then is **Java Classes** enabled on Generate (lesson L9).
+- **Generated units, Oracle's KERNEL screens** (shipped jars): def class `com.ofss.pmts.pm.def.<FID>`, DTO
+  `<Name>Dto`, entity `<Name>`, `<Name>Kernel`, `<Name>KernelSys`, `<Name>KernelSysDao`, `<Name>Assembler`.
+- **Generated units, a NEW screen in a CUSTOM release** (seen in ODT's generated zip): there is **no Kernel class**.
+  - `PMKernel/src/com/ofss/pmts/pm/<Name>Custom.java` (implements `IExtensible`) and `<Name>CustomSys.java`
+    (implements `ISys`: mandatory checks `MAND-001`, `EXISTS`, `NO-SOURCE`, `NO-DATA`)
+  - `PMDto/.../dto/<Name>CustomDto.java`, `PMEntities/.../<Name>.java` + `<Name>PK.java` (JPA)
+  - `PMKernelDao/.../<Name>CustomSysDao.java`, `.../assembler/<Name>CustomAssembler.java`
+  - `PMCommon/.../def/<FID>.java`, `UIXML/ENG/<FID>.xml`, `JS/<FID>_SYS.js`, `INC/*`, `RADXML/<FID>_RAD.xml`
+  - Compiling them needs, beside the PM jars of the EAR, `javax.persistence` (from the application server) and the
+    EAR's Jackson and Swagger annotation jars.
 - **`<Name>` comes from the master block's XSD node** with the hyphens removed: `Pmtms-Cust-Service-Model-Link` gives
   `PmtmsCustServiceModelLink*`, `Hst-Param` gives `HstParam*`. Pick a distinctive node (`BLK_<DATA SOURCE>` /
   `<Data-Source>`), never a generic one like `Limit-Master`.
-- **DTO properties follow the data source columns** (camel case: `CUSTOMER_SERVICE_MODEL` -> `getCustomerServiceModel`),
-  not the block field names. NUMBER columns are `BigDecimal`. The DTO extends `MaintainableDto` (audit fields).
-- **Hooks:** `public class <Name>Custom extends <Name>Kernel` with constructor `(RequestProfile)`. The framework
+- **DTO property names:** in the generated `<Name>CustomDto` they come from the **block field names**, lower case
+  after the first letter (`HOSTCODE` -> `getHostcode`, `CUSTSRVMOD` -> `getCustsrvmod`). The JPA entity uses the
+  columns (`getCustomerServiceModel`). Shipped kernel DTOs look column-based only because their fields are named
+  after the columns. NUMBER is `BigDecimal`; the DTO extends `MaintainableDto` (audit fields).
+- **Hooks:** a new CUSTOM screen's `public class <Name>Custom implements IExtensible` (constructor `(RequestProfile)`,
+  logger `com.ofss.pmts.logger.Logger.logDebug(msg, DebugLevels.INFO)`); on a kernel screen it `extends <Name>Kernel`.
+  Write the hooks into ODT's generated file, keeping its structure. The framework
   (`PMTransactionProcessor`) calls `preCheckMandatory(curDto)`, `postCheckMandatory(curDto)`,
   `pre/postDefaultAndValidate(prevDto, curDto)`, `pre/postQuery`, `pre/postPersist` - **the record being saved is the
   second argument**. Validations go in `postDefaultAndValidate`; defaults that the mandatory check needs go in
