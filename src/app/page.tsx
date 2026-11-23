@@ -222,7 +222,7 @@ export default async function Home() {
                 </p>
                 <div className={`${s.heroActions} ${s.rise} ${s.r4}`}>
                   <Link href="/app" className={s.btn}>Start your first job <Arrow /></Link>
-                  <a href="#watch" className={s.textLink}>Watch the 10-minute tour</a>
+                  <a href="#watch" className={s.textLink}>Watch the 5-minute overview</a>
                 </div>
               </div>
               <aside className={`${s.heroAside} ${s.rise} ${s.r5}`} aria-label="From a recent job">
@@ -245,11 +245,11 @@ export default async function Home() {
             <div className={s.split}>
               <span className={s.eyebrow}>Watch</span>
               <h2 id="watch-h" className={`${s.serif} ${s.h2}`}>
-                TrustForge in <em className={s.gold}>ten minutes.</em>
+                TrustForge in <em className={s.gold}>five minutes.</em>
               </h2>
             </div>
             <div style={{ marginTop: 48 }}>
-              <Presentation />
+              <Presentation price={formatPrice(price)} />
             </div>
           </div>
         </section>

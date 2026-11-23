@@ -1,140 +1,120 @@
 /**
- * The TrustForge presentation: 12 chapters, 600 seconds. Captions are the narration (shown as subtitles, spoken
- * when voice is on, and listed in full as the transcript for readers and search engines).
- * `at` = seconds from the start of the chapter.
+ * The TrustForge sales pitch: 10 chapters, about 5 minutes. `text` is exactly what the voice reads
+ * (the Clipchamp text-to-speech script in marketing/trustforge-pitch-voice-script.md is generated from it).
+ * Subtitles are the sentences of `text`, timed by word count within each chapter.
  */
 
-export type Caption = { at: number; text: string };
-export type Chapter = { id: string; title: string; seconds: number; captions: Caption[] };
+export type Chapter = { id: string; title: string; text: string };
 
 export const CHAPTERS: Chapter[] = [
   {
-    id: "intro",
-    title: "TrustForge in ten minutes",
-    seconds: 30,
-    captions: [
-      { at: 0, text: "This is TrustForge: an AI agent for Oracle FLEXCUBE customization, built on Anthropic." },
-      { at: 10, text: "In the next ten minutes you’ll see what FLEXCUBE changes cost today, how TrustForge builds them, and what stays with your team." },
-      { at: 22, text: "Let’s start with the problem." },
-    ],
+    id: "hook",
+    title: "What if…",
+    text:
+      "What if your next Oracle FLEXCUBE customization cost hundreds of dollars, instead of hundreds of thousands? What if the first files were ready in minutes, not weeks? Imagine your developers describing a change in plain words, and getting files ready for ODT the same day. Meet TrustForge: the AI agent for FLEXCUBE customization, built on Anthropic.",
   },
   {
     id: "problem",
-    title: "What customization costs today",
-    seconds: 60,
-    captions: [
-      { at: 0, text: "Every bank running Oracle FLEXCUBE needs changes: a new field, a new charge, a new screen for a local regulation." },
-      { at: 14, text: "Through an implementation partner, a single customization often costs tens of thousands of dollars, and large ones run into the hundreds of thousands." },
-      { at: 30, text: "Partners staff programmes with tens to hundreds of developers, billed by the hour." },
-      { at: 42, text: "And it takes weeks of analysis and development before the first file reaches ODT." },
-    ],
-  },
-  {
-    id: "why",
-    title: "Why FLEXCUBE work is slow",
-    seconds: 50,
-    captions: [
-      { at: 0, text: "Most of that effort isn’t business logic. It’s knowing ODT, the Oracle Development Workbench." },
-      { at: 12, text: "FLEXCUBE code is layered: Oracle’s KERNEL, the CLUSTER layer, and your bank’s CUSTOM layer." },
-      { at: 24, text: "Every change must follow rules about how these layers merge, which scripts ODT must generate, and how hook packages are called." },
-      { at: 38, text: "Miss one rule and the screen won’t save, or Modify fails in testing weeks later." },
-    ],
+    title: "The cost today",
+    text:
+      "Today, every FLEXCUBE change is expensive. A new field, a new charge, a new screen for the regulator. Through an implementation partner, a single customization can cost tens of thousands of dollars, and the large ones run into the hundreds of thousands. Partners bill whole teams of developers by the hour, and the backlog keeps growing. Specialist ODT skills are scarce, so every change queues behind the last one. Weeks go by before the first file even reaches ODT. Your business waits, and your budget pays for every hour.",
   },
   {
     id: "meet",
-    title: "Meet the agent",
-    seconds: 40,
-    captions: [
-      { at: 0, text: "TrustForge carries those rules. It’s an AI agent built on Anthropic’s AI, with FLEXCUBE ODT knowledge and checks for every kind of job." },
-      { at: 16, text: "You work with it like a senior ODT developer: describe, discuss, build, deliver." },
-      { at: 28, text: "Here’s a real job, from start to finish." },
-    ],
+    title: "Meet TrustForge",
+    text:
+      "TrustForge changes that. It is an AI agent built on Anthropic, trained on how FLEXCUBE is really built with ODT, the Oracle Development Workbench. It works like a senior ODT developer on your team. It understands radxml, release layers, hook packages, and the rules that make a screen load, save and deploy. It never forgets a rule, never skips a check, and never gets tired. And it is available to every developer on your team, at any hour.",
   },
   {
-    id: "describe",
-    title: "1. Describe",
-    seconds: 60,
-    captions: [
-      { at: 0, text: "A developer opens TrustForge, picks “Customize a function”, FLEXCUBE 14.7, the CUSTOM layer, and types the bank’s release code." },
-      { at: 16, text: "The requirement is one sentence: add a sixth charge to IFDATMMN, the same as charge five." },
-      { at: 30, text: "They upload the function’s radxml, the table definition and the related packages. Development objects only, never customer data." },
-      { at: 46, text: "TrustForge reads everything and restates the requirement as numbered, testable items." },
-    ],
+    id: "how",
+    title: "How it works",
+    text:
+      "Working with TrustForge is a conversation. First, describe the change in plain words, and upload your objects: the radxml, the tables, the packages. Second, discuss. TrustForge asks only the questions that matter, and proposes a plan. Nothing is built until you approve it. Third, build. It produces the radxml, the CUSTOM hook package, the release JavaScript and the scripts, and checks every file against ODT’s rules. Fourth, deliver. You download everything, with a deployment guide and unit tests, ready to load in ODT. Your developers stay in control, from the first message to the last.",
   },
   {
-    id: "discuss",
-    title: "2. Discuss",
-    seconds: 60,
-    captions: [
-      { at: 0, text: "Then it asks only the questions that change the design." },
-      { at: 10, text: "Where should charge six be stored? A custom extension table, linked one to one, so Oracle’s table stays untouched." },
-      { at: 26, text: "Is it only maintained, or also used when transactions are processed? That decides how far the change goes." },
-      { at: 40, text: "It proposes a plan: the files it will deliver, the risks, and the limits. Nothing is built until the developer approves." },
-    ],
+    id: "results",
+    title: "Real results",
+    text:
+      "This is not a concept. On a live FLEXCUBE fourteen point seven environment, TrustForge built a new customer risk profile screen that is now compiled, deployed and in use. On another job, it added a complete sixth charge to Oracle’s ARC maintenance: thirty-six new fields in the CUSTOM layer, with zero Oracle values changed. And every lesson from a real deployment becomes a new check, so each job is safer than the last.",
   },
   {
-    id: "build",
-    title: "3. Build and check",
-    seconds: 60,
-    captions: [
-      { at: 0, text: "Once approved, TrustForge builds every file." },
-      { at: 8, text: "The radxml with thirty-six new fields in the CUSTOM layer. The extension table. The CUSTOM hook package with charge-six validations. The release JavaScript. Label scripts." },
-      { at: 28, text: "Then it checks them: ODT’s load and save rules, every reference between blocks, fields and lists of values." },
-      { at: 44, text: "And it proves the most important thing: Oracle values changed, zero." },
-    ],
-  },
-  {
-    id: "deliver",
-    title: "4. Deliver",
-    seconds: 50,
-    captions: [
-      { at: 0, text: "The developer downloads the files, with a CHANGES guide: the deployment order and unit tests for every requirement." },
-      { at: 16, text: "They load the radxml in ODT, generate, and send the generated zip back. TrustForge checks the zip before anything is compiled." },
-      { at: 32, text: "Then the bank compiles, deploys and tests in its own environments. The bank stays in control." },
-    ],
-  },
-  {
-    id: "learns",
-    title: "It learns from every deployment",
-    seconds: 40,
-    captions: [
-      { at: 0, text: "Real deployments teach things no manual says." },
-      { at: 8, text: "On this job, Modify failed with ST-AMND-002. TrustForge traced it: ODT only generates amendable scripts when the CUSTOM layer has its own Actions node." },
-      { at: 26, text: "The fix shipped the same day, and a new check now catches it for every bank, before anything reaches the database." },
-    ],
+    id: "offer",
+    title: "What it covers",
+    text:
+      "One agent covers the work your team does every week, on FLEXCUBE Universal Banking fourteen point six and fourteen point seven. New FLEXCUBE screens: maintenance, online, call forms and launch forms. Changes to Oracle’s own functions, safely in the CUSTOM layer. Hook packages and release JavaScript, for validations and processing. Radxml reviews, before you load anything. Silent ODT, for bulk generation and web services. And clear answers to any ODT question.",
   },
   {
     id: "safety",
-    title: "Built for how banks work",
-    seconds: 40,
-    captions: [
-      { at: 0, text: "Oracle’s code is never edited: everything goes in the CUSTOM layer." },
-      { at: 10, text: "Nothing is built without approval, and passwords and keys are never written into files." },
-      { at: 20, text: "Each job runs in a private sandbox and its files are deleted with it. Banks that need it can run TrustForge inside their own network." },
-    ],
+    title: "Safe for banks",
+    text:
+      "It is built for how banks work. Oracle’s code is never edited: every change goes in your CUSTOM layer, so upgrades stay safe. Nothing is built without your approval. Passwords and keys are never written into files. Each job runs in its own private sandbox, and its files are deleted with it. Your bank’s data stays yours. And if everything must stay inside your network, TrustForge can run in your bank’s own cloud.",
   },
   {
-    id: "cost",
+    id: "savings",
     title: "Up to 90% less",
-    seconds: 60,
-    captions: [
-      { at: 0, text: "So what does this change?" },
-      { at: 6, text: "The usual way: tens to hundreds of thousands of dollars, weeks of work, and large partner teams." },
-      { at: 22, text: "With TrustForge: hundreds of dollars, the first files in minutes, and your own developers reviewing and testing." },
-      { at: 40, text: "For many changes, that’s up to ninety percent lower development cost. Savings depend on scope, and your team still tests every change." },
-    ],
+    text:
+      "Now, compare. The usual way: tens to hundreds of thousands of dollars, weeks of work, and large partner teams. With TrustForge: hundreds of dollars, the first files in minutes, and your own developers reviewing and testing. For many changes, that is up to ninety percent lower development cost. Think of what your team could deliver with the budget you save: more changes, delivered faster, by the same people. Your team still tests every change. TrustForge does the heavy lifting.",
   },
   {
-    id: "start",
+    id: "pricing",
+    title: "Simple pricing",
+    text:
+      "Getting started is simple. Start free, with radxml reviews and ODT questions. When your team is ready, the Partner plan is one hundred dollars per seat, per month, with every job type and a usage allowance for each seat, plus extra usage whenever you need it. There are no long contracts: add or remove seats at any time. Or arrange a private install for your bank.",
+  },
+  {
+    id: "cta",
     title: "Start today",
-    seconds: 50,
-    captions: [
-      { at: 0, text: "Start free with radxml reviews and ODT questions." },
-      { at: 10, text: "Move your team to Partner for new screens, customizations, hook code and Silent ODT, with a daily, weekly and monthly usage allowance per seat, and extra usage when you need it." },
-      { at: 30, text: "Or arrange a private install in your bank’s own cloud." },
-      { at: 40, text: "TrustForge, by TrustRoute Technologies. FLEXCUBE customizations, forged in conversation." },
-    ],
+    text:
+      "Your next FLEXCUBE change does not have to take weeks, or cost a fortune. Bring a requirement and your objects, and leave with files ready for ODT. Start your first job today, at forge dot trustroute technologies dot com. TrustForge, by TrustRoute Technologies. FLEXCUBE customizations, forged in conversation.",
   },
 ];
 
-export const TOTAL_SECONDS = CHAPTERS.reduce((s, c) => s + c.seconds, 0);
+/**
+ * The recorded voice-over. Leave `src` empty until the file is added to /public/media.
+ * `chapterStarts`: second at which each chapter starts in the recording (found from the pauses between chapters).
+ * With a recording but no starts, chapter lengths are estimated from word counts and scaled to the recording.
+ */
+export const VOICE: { src: string; chapterStarts: number[] | null; sentenceStarts?: number[][] } = {
+  src: "/media/trustforge-pitch.mp3",
+  // measured from the recording (5:38.6): each chapter starts 0.25 s before its first word
+  chapterStarts: [0, 27.15, 66.85, 101.2, 149.2, 180.5, 219.1, 250.45, 286.15, 314.9],
+  // second at which each subtitle sentence starts, snapped to the pauses in the recording
+  sentenceStarts: [
+    [0, 7.55, 11.7, 20.9],
+    [27.15, 31.1, 35.55, 45.3, 51, 57.1, 61.55],
+    [66.85, 69.3, 78.4, 82.55, 90.45, 93.65],
+    [101.2, 104.65, 112.7, 113.85, 118.5, 123.25, 124.2, 134.65, 135.6, 141.1],
+    [149.2, 151.4, 161.75, 172.9],
+    [180.5, 191.3, 195.65, 200.7, 206.2, 209.75, 214.65],
+    [219.1, 221.75, 228.8, 231.6, 235.3, 240.8, 243.35],
+    [250.45, 251.35, 259.6, 267.15, 272.55, 280.2, 283.25],
+    [286.15, 288.65, 293.45, 305.05, 309.65],
+    [314.9, 322.75, 327.85, 334.05, 336.6],
+  ],
+};
+
+/* ---------- timing ---------- */
+
+const WORDS_PER_SECOND = 2.5; // a natural text-to-speech pace
+const PAUSE = 1; // seconds of silence between chapters in the recording
+
+export function words(s: string): number {
+  return s.split(/\s+/).filter(Boolean).length;
+}
+
+/** Subtitle sentences of a chapter, each with its share of the chapter (0 to 1) where it starts. */
+export function sentencesOf(text: string): { at: number; text: string }[] {
+  const parts = text.match(/[^.!?…]+[.!?…]+[’”"]?\s*|[^.!?…]+$/g)?.map((x) => x.trim()).filter(Boolean) ?? [text];
+  const total = words(text);
+  let done = 0;
+  return parts.map((p) => {
+    const at = done / total;
+    done += words(p);
+    return { at, text: p };
+  });
+}
+
+/** Estimated length of each chapter in seconds (speech plus the pause after it). */
+export function estimatedSeconds(): number[] {
+  return CHAPTERS.map((c) => words(c.text) / WORDS_PER_SECOND + PAUSE);
+}
