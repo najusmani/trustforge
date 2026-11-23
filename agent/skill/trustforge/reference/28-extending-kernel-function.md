@@ -52,6 +52,13 @@ WHERE REGEXP_LIKE(UPPER(text), '<slot-N column regex>') ORDER BY name, type, lin
 SELECT name, type, SUBSTR(text,1,80) FROM user_source WHERE line = 1 AND name IN (...);
 ```
 - Then ask for the spec + body of the core package and its `_CLUSTER` / `_CUSTOM` layers.
+- **Trace the channels before designing hooks** (lesson L5): ask for a debug log of one real transaction per channel
+  that must use the new data (branch screen, teller, switch/ATM, upload, payments) and list the CUSTOM hooks each one
+  calls. The same calculation can be posted by different code per channel: teller and switch build charge entries in
+  `DEPKS_RTL_TELLER.PR_BUILD_CHG_ENTRIES` (hooks `pr_pre_build_chg_entries` / `pr_build_chg_entries`), while other
+  callers net charges through `CSPKS_ARC.PR_NET_CHARGES`. Kernel debug text can mislabel call ids; read the code.
+- Every hand-written CUSTOM body gets a marker comment and always logs what it did or why it skipped; CHANGES.md
+  gives the `USER_SOURCE` query that proves the delivered body is the one compiled.
 - Look for **fixed slots** after the calculation: records with columns 1..5, globals `g_x1..g_x5`, procedure parameters per slot, teller/transaction table columns per slot, accounting amount tags per slot. Each one is a place a new slot is dropped.
 - If the kernel is fixed-slot, say so plainly and give options: (A) Oracle SR to extend the kernel (clean), (B) CUSTOM workaround through existing hooks with stated limits (not shown on screens, not waivable, posts only in some flows ...), (C) business workaround. Let the user choose.
 

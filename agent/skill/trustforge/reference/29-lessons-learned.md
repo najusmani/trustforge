@@ -13,6 +13,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L2 | New CUSTOM validations/defaulting silently do nothing after deploy | ODT's empty CUSTOM body compiled over the hand-written one |
 | L3 | `RD-VALS-027` on ODT save | PK column not a field of its data source |
 | L4 | `RD-VALS-60` on ODT save | Duplicate XSD tag on a new field |
+| L5 | A transaction-time CUSTOM extension (extra charge, extra processing) has no effect, no error | Hook body not deployed, test data outside the design's conditions, or the channel never calls the hook |
 
 ---
 
@@ -60,6 +61,28 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 ## L4 - RD-VALS-60 on ODT save
 - **Cause / fix:** two fields share an `XSD_TAG` (common when cloning a kernel slot). Give each new field a unique tag.
 - **Prevention:** `check_radxml.py` reports it as an ERROR.
+
+## L5 - Transaction-time CUSTOM extension does nothing
+- **Seen:** IFDATMMN charge 6 (extra ARC charge added through `CSPKS_ARC_CUSTOM` hooks), tested with an ATM cash
+  withdrawal through FLEXCUBE Switch, FCUBS 14.7, 2026-11-23. The transaction succeeded; charge 6 was not applied.
+- **Symptom:** no error and no trace of the extension in the debug log; the hooks' generic "Start of …" lines appear.
+- **Cause:** three independent ones, all visible in one debug log of a real transaction:
+  1. The compiled CUSTOM body was not the delivered one (Oracle's empty stub logs the same "Start of …" lines).
+  2. The test record did not meet the design's conditions (the ARC record matched had charges 1-3 and netting off;
+     the extension needs charges 1-5 and Net Charges).
+  3. The channel never called the posting hook: teller and switch transactions build charge entries in
+     `DEPKS_RTL_TELLER.PR_BUILD_CHG_ENTRIES` (CUSTOM hooks `pr_pre_build_chg_entries` / `pr_build_chg_entries`),
+     not in `CSPKS_ARC.PR_NET_CHARGES`.
+  Also: kernel debug text can mislabel hook call ids (`CSPKS_ARC` prints "call id 2" while setting call id 3).
+- **Fix:** check deployment with `USER_SOURCE` (marker text), test with data that meets every condition, and put the
+  logic in the hook the channel actually calls (trace it in a debug log first).
+- **Prevention:**
+  - Every hand-written CUSTOM body carries a marker comment (e.g. `--<FID>_<FEATURE>`), always logs one line saying
+    what it did or why it skipped, and CHANGES.md gives the `USER_SOURCE` query that proves it is compiled.
+  - Before building a transaction-time extension, get a debug log of one real transaction per channel (branch,
+    teller, switch/ATM, upload, payments) and list which hooks it calls; design against that list
+    (`28-extending-kernel-function.md` section 6).
+  - Unit tests for each channel state the exact debug lines expected, and test data that meets every condition.
 
 ---
 
