@@ -52,6 +52,13 @@ WHERE REGEXP_LIKE(UPPER(text), '<slot-N column regex>') ORDER BY name, type, lin
 SELECT name, type, SUBSTR(text,1,80) FROM user_source WHERE line = 1 AND name IN (...);
 ```
 - Then ask for the spec + body of the core package and its `_CLUSTER` / `_CUSTOM` layers.
+- **Prefer lending a free slot** when the kernel is fixed-slot but a record does not use every slot: in the pick-up
+  hook that runs after the record is read and before the kernel copies it into its working structures (for ARC:
+  `CSPKS_ARC_CUSTOM.PR_GET_ARC_ROW` with call id 1), copy the extra slot's fields into the first free slot of the
+  record in memory. The kernel then handles it natively in every channel (screens, waiver, entries with the slot's
+  amount tag, reversal, advices). Generate the field mapping from the kernel radxml data source and check every
+  target column exists; keep the used slots in order; guard against lending twice. Only records that use every
+  slot need an N+1 workaround. (IFDATMMN charge 6, 2026-11-23.)
 - **Trace the channels before designing hooks** (lesson L5): ask for a debug log of one real transaction per channel
   that must use the new data (branch screen, teller, switch/ATM, upload, payments) and list the CUSTOM hooks each one
   calls. The same calculation can be posted by different code per channel: teller and switch build charge entries in
