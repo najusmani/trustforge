@@ -29,7 +29,7 @@ export default function OpengraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: 22, letterSpacing: 5, color: "#c9ae78", marginBottom: 24 }}>
-            AI FOR ORACLE FLEXCUBE UBS 14.6 & 14.7
+            AI FOR ORACLE FLEXCUBE UBS & BANKING PAYMENTS 14.6 & 14.7
           </span>
           <span style={{ fontSize: 74, lineHeight: 1.05, color: "#ffffff" }}>FLEXCUBE customizations,</span>
           <span style={{ fontSize: 74, lineHeight: 1.05, color: "#c9ae78", fontStyle: "italic" }}>forged in conversation.</span>

@@ -91,11 +91,11 @@ function faqFor(price: string, cycle: string) {
   return [
     {
       q: "What is TrustForge?",
-      a: "TrustForge is an AI assistant for Oracle FLEXCUBE Universal Banking developers. You describe a change and upload your objects; it asks what it needs, agrees a plan with you, and delivers radxml, CUSTOM hook packages, release JavaScript and scripts ready to load in ODT (the Development Workbench).",
+      a: "TrustForge is an AI assistant for Oracle FLEXCUBE Universal Banking and Oracle Banking Payments developers. You describe a change and upload your objects; it asks what it needs, agrees a plan with you, and delivers radxml, CUSTOM hook packages, release JavaScript and scripts ready to load in ODT (the Development Workbench).",
     },
     {
       q: "Which Oracle FLEXCUBE releases does TrustForge support?",
-      a: "FLEXCUBE Universal Banking (FCUBS) 14.6 and 14.7. Output has been verified end to end on 14.7.0.6.0, where TrustForge-built screens were loaded, generated and deployed.",
+      a: "FLEXCUBE Universal Banking (FCUBS) and Oracle Banking Payments (OBPM), releases 14.6 and 14.7. For Oracle Banking Payments it builds ODT screens with Java functions, Java processing hooks registered in PMTM_EXTENSION_CLASSES (for example business-override validations and queue actions) and the PL/SQL behind them. FCUBS output has been verified end to end on 14.7.0.6.0, where TrustForge-built screens were loaded, generated and deployed.",
     },
     {
       q: "Can TrustForge customize an existing Oracle FLEXCUBE screen?",
@@ -216,8 +216,8 @@ export default async function Home() {
                   <em className={s.gold}>forged by an AI agent.</em>
                 </h1>
                 <p className={`${s.heroLead} ${s.rise} ${s.r3}`}>
-                  Describe the change and upload your objects. TrustForge, an AI assistant for FLEXCUBE UBS 14.6 and
-                  14.7, asks what it needs, agrees a plan with you, and delivers radxml, CUSTOM hook packages,
+                  Describe the change and upload your objects. TrustForge, an AI assistant for FLEXCUBE UBS and Oracle
+                  Banking Payments 14.6 and 14.7, asks what it needs, agrees a plan with you, and delivers radxml, CUSTOM hook packages,
                   JavaScript and scripts ready to load in ODT. Up to 90% less than the usual cost.
                 </p>
                 <div className={`${s.heroActions} ${s.rise} ${s.r4}`}>

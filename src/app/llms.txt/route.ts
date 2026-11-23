@@ -10,7 +10,7 @@ export function GET() {
     "",
     `> ${SITE.description}`,
     "",
-    `${SITE.name} is built by ${SITE.companyLegal} (${SITE.locality}, ${SITE.region}, Canada). It supports Oracle FLEXCUBE Universal Banking (FCUBS) releases 14.6 and 14.7. Work follows Oracle's extensibility rules: changes go in the CUSTOM layer, Oracle-shipped values are never edited, and every output is loaded and compiled by the bank's own team in ODT (Oracle Development Workbench, formerly the RAD tool).`,
+    `${SITE.name} is built by ${SITE.companyLegal} (${SITE.locality}, ${SITE.region}, Canada). It supports Oracle FLEXCUBE Universal Banking (FCUBS) and Oracle Banking Payments (OBPM) releases 14.6 and 14.7, including OBPM Java screens and processing hooks (PMTM_EXTENSION_CLASSES). Work follows Oracle's extensibility rules: changes go in the CUSTOM layer, Oracle-shipped values are never edited, and every output is loaded and compiled by the bank's own team in ODT (Oracle Development Workbench, formerly the RAD tool).`,
     "",
     "## What it does",
     "",

@@ -22,8 +22,8 @@ export default async function TermsPage() {
 
       <h2>2. The service</h2>
       <p>
-        {L.product} is an AI assistant for developers working with Oracle FLEXCUBE Universal Banking (releases 14.6 and
-        14.7) and its development tool, ODT. You describe a change and upload your development objects (such as radxml
+        {L.product} is an AI assistant for developers working with Oracle FLEXCUBE Universal Banking and Oracle Banking
+        Payments (releases 14.6 and 14.7) and their development tool, ODT. You describe a change and upload your development objects (such as radxml
         files, table definitions, packages and JavaScript). {L.product} asks questions, proposes a plan and produces
         files for you to review and load in ODT yourself.
       </p>

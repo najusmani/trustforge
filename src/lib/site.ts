@@ -11,7 +11,7 @@ export const SITE = {
   country: "CA",
   tagline: "The AI agent for Oracle FLEXCUBE customization, built on Anthropic",
   description:
-    "TrustForge is an AI agent and assistant for Oracle FLEXCUBE customization, built on Anthropic. For FLEXCUBE Universal Banking (FCUBS) 14.6 and 14.7: describe a change, upload your objects, agree a plan, and get radxml, CUSTOM hook packages, release JavaScript and scripts ready for ODT, at up to 90% less than the usual cost.",
+    "TrustForge is an AI agent and assistant for Oracle FLEXCUBE customization, built on Anthropic. For FLEXCUBE Universal Banking (FCUBS) and Oracle Banking Payments (OBPM) 14.6 and 14.7: describe a change, upload your objects, agree a plan, and get radxml, CUSTOM hook packages, release JavaScript and scripts ready for ODT, at up to 90% less than the usual cost.",
   keywords: [
     "Oracle FLEXCUBE",
     "FLEXCUBE customization",
@@ -21,6 +21,11 @@ export const SITE = {
     "radxml",
     "FLEXCUBE 14.7",
     "FLEXCUBE 14.6",
+    "Oracle Banking Payments",
+    "Oracle Banking Payments customization",
+    "OBPM customization",
+    "OBPM 14.7",
+    "OBPM 14.6",
     "FCUBS customization",
     "FLEXCUBE new screen",
     "FLEXCUBE hook package",
