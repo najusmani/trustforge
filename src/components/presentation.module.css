@@ -247,3 +247,5 @@
 .titleSm { font-size: 5.6cqw; margin-top: 0.6cqw; }
 
 .siteTag { position: absolute; top: 3.2cqw; right: 4cqw; font-family: var(--font-mono), monospace; font-size: 1.15cqw; letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.6); }
+
+.player { font-variant-numeric: lining-nums; }
