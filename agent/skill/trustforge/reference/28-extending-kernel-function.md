@@ -77,6 +77,7 @@ SELECT name, type, SUBSTR(text,1,80) FROM user_source WHERE line = 1 AND name IN
 - If the kernel is fixed-slot, say so plainly and give options: (A) Oracle SR to extend the kernel (clean), (B) CUSTOM workaround through existing hooks with stated limits (not shown on screens, not waivable, posts only in some flows ...), (C) business workaround. Let the user choose.
 
 ## 7. Non-maintenance kernel package layering (e.g. CSPKS_ARC)
+- The deployed release type is the `RELEASE_TYPE` parameter of `SMTB_PARAMETERS` (Oracle Banking Payments 14.7 extensibility reference; file 30). Layers above it are never called, so check it first when a CUSTOM hook does not fire.
 - Kernel calls `<PKG>_CLUSTER.<proc>` with a call id (`L_FN_CALL_ID`) and a `GLOBAL.TY_TB_CUSTOM_DATA` key/value table; the cluster body forwards to `<PKG>_CUSTOM` **only when `CSPKS_REQ_GLOBAL.G_RELEASE_TYPE` is CLUSTER/CUSTOM**. If the environment runs as KERNEL, no custom hook runs. Read the cluster body to confirm each hook is forwarded and which keys it copies.
 - Older kernel code uses `STPKS_FCMAINT_SERVICE.P_NEW/P_MODIFY`; generated 14.x code uses `Cspks_Req_Global.p_New/...` - same values.
 - Package variables survive between requests in pooled DB sessions. When a value captured in one hook is used in a later hook, key it to the transaction (account, reference) and drop it if it does not match, so a stale value can never post on another transaction.
