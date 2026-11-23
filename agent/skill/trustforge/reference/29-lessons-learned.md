@@ -15,6 +15,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L4 | `RD-VALS-60` on ODT save | Duplicate XSD tag on a new field |
 | L5 | A transaction-time CUSTOM extension (extra charge, extra processing) has no effect, no error | Hook body not deployed, test data outside the design's conditions, or the channel never calls the hook |
 | L6 | `PLS-00103: Encountered the symbol "<NAME>" when expecting one of the following: begin end function pragma procedure` compiling a package body | A package-level declaration placed after a procedure/function body |
+| L8 | Extra entries added by a CUSTOM hook are logged as added but missing from the final accounting hand-off (teller/ATM) | Kernel writes later entries at fixed hand-off positions and overwrites them |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -111,6 +112,21 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   function in the spec).
 - **Prevention:** `../skills/odt-hook-code/scripts/check_plsql_body.py` (check `sqlfn`) flags a body-only function used
   inside `SELECT` / `INSERT` / `UPDATE` / `DELETE` / `MERGE`; it reads the spec from a `.spc`/`.pks` next to the body.
+
+## L8 - Entries added to the hand-off are overwritten by the kernel
+- **Seen:** extra ARC charge posted from a CUSTOM hook in a switch (ATM) cash withdrawal, FCUBS 14.7, 2026-11-23.
+- **Symptom:** the hook's debug line says the entries were added, but the kernel's printed accounting table and the
+  final hand-off do not contain them; no error.
+- **Cause:** `DEPKS_RTL_TELLER.PR_BUILD_CHG_ENTRIES` writes charge entries at **fixed positions** of the hand-off
+  table (`J` = 3, 5, 7, ... per charge), not at `COUNT + 1`. Anything appended before the charge loop (for example in
+  `PR_BUILD_ACCTNG_ENTRIES` call id 1) is overwritten.
+- **Fix:** append extra entries in the last hook before `ACPKS.FN_ACHANDOFF`. For teller/switch this is
+  `DEPKS_RTL_TELLER_CUSTOM.FN_SAVE` with call id 7 (the overload with `P_ACC_HAND IN OUT`, logged as `fn_save3`).
+  Keep a duplicate-tag guard.
+- **Prevention:** `28-extending-kernel-function.md` names call id 7 as the teller posting point. Before adding entries
+  from any hook, read how the kernel indexes the table after that hook. If the next kernel step writes `P_ACC_HAND(J)`
+  with its own counter, add the entries later. Not mechanically checkable (needs the kernel body); the unit test
+  must check the final hand-off table in the debug log, not the hook's own message.
 
 ---
 

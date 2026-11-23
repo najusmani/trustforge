@@ -58,8 +58,9 @@ SELECT name, type, SUBSTR(text,1,80) FROM user_source WHERE line = 1 AND name IN
   - **Own slot (default to propose).** Calculate the new slot in CUSTOM code from the record and the kernel's
     calculated slots 1..N (for ARC: in `CSPKS_ARC_CUSTOM.FN_CHARGE_PICKUP_POST`), then post it as entries with its
     own amount tag (`CHG_AMT6`). Post it from the hook each channel really calls: for teller/switch,
-    `DEPKS_RTL_TELLER_CUSTOM.PR_BUILD_ACCTNG_ENTRIES` call id 1 (once per transaction, after the main entries); for
-    other netting flows, `CSPKS_ARC_CUSTOM.PR_NET_CHARGES_PRE`. Use a duplicate guard so it is posted once, and an
+    `DEPKS_RTL_TELLER_CUSTOM.FN_SAVE` call id 7 (once per transaction, after all charge entries and before
+    `ACPKS.FN_ACHANDOFF`; earlier hooks get overwritten, lesson L8); for other netting flows,
+    `CSPKS_ARC_CUSTOM.PR_NET_CHARGES_PRE`. Use a duplicate guard so it is posted once, and an
     optional log table for enquiry. Limits: not on kernel screens or advices, not waivable.
   - **Lending a free kernel slot** (copy the extra slot into the first unused slot 1..N in memory at pick-up). This
     one only with the user's explicit agreement. It changes what the bank sees: the slot is posted under another slot's
