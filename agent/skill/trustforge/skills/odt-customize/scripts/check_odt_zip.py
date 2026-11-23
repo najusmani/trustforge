@@ -171,7 +171,16 @@ def main(argv):
         if mm:
             mod = mm.group(1).lower()
     need = {f'UIXML/ENG/{fid}.XML': 'UIXML (Screen Xml)', f'JS/{fid}_SYS.JS': 'System JS'}
-    if mod:
+    # OBPM Java functions (screen Preferences "Java functions" = ELCM_FUNCTION Y): Java classes, no PL/SQL packages
+    java_fn = 'Y' in [e.text for e in m.iter('ELCM_FUNCTION')]
+    java_src = [n for n in names if n.lower().endswith('.java')]
+    if java_fn:
+        custom_cls = [n for n in java_src if re.search(r'/src/.*Custom\.java$', n)]
+        if custom_cls:
+            ok('units', f'Java functions: {len(java_src)} Java sources, hook class {os.path.basename(custom_cls[0])}')
+        else:
+            err('units', 'Java functions screen but no <Name>Custom.java in the zip: tick Java Classes on Generate')
+    elif mod:
         need.update({f'SPC/{mod}PKS_{fid}_MAIN.SPC'.upper(): 'Main Package Spec',
                      f'SQL/{mod}PKS_{fid}_MAIN.SQL'.upper(): 'Main Package Body',
                      f'SPC/{mod}PKS_{fid}_CUSTOM.SPC'.upper(): 'Custom Package Spec'})
