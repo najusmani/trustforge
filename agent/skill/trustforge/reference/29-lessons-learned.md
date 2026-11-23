@@ -16,6 +16,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L5 | A transaction-time CUSTOM extension (extra charge, extra processing) has no effect, no error | Hook body not deployed, test data outside the design's conditions, or the channel never calls the hook |
 | L6 | `PLS-00103: Encountered the symbol "<NAME>" when expecting one of the following: begin end function pragma procedure` compiling a package body | A package-level declaration placed after a procedure/function body |
 | L8 | Extra entries added by a CUSTOM hook are logged as added but missing from the final accounting hand-off (teller/ATM) | Kernel writes later entries at fixed hand-off positions and overwrites them |
+| L9 | OBPM: the **Java Classes** check box on Generate is disabled (greyed out) | "Java functions" not ticked in the screen's Preferences (`JAVA_PAYEMNTS_FUNCTION` empty in the radxml) |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -127,6 +128,19 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   from any hook, read how the kernel indexes the table after that hook. If the next kernel step writes `P_ACC_HAND(J)`
   with its own counter, add the entries later. Not mechanically checkable (needs the kernel body); the unit test
   must check the final hand-off table in the debug log, not the hook's own message.
+
+## L9 - OBPM: Java Classes disabled on Generate
+- **Seen:** new OBPM 14.7 maintenance (CUSTOM release, Java back end) loaded from a generated radxml, 2026-11-23.
+- **Symptom:** on Generate the **Java Classes** check box is disabled, so no `<Name>Dto/Kernel/Custom` classes can be
+  generated.
+- **Cause:** ODT enables it only when the function's own **Preferences** node has **Java functions** ticked. In the
+  radxml this is `RAD_FUNC_PREFERENCES/JAVA_PAYEMNTS_FUNCTION` (Oracle's spelling), which was empty. It is a screen
+  preference, not a User Preferences setting.
+- **Fix:** tick **Java functions** in the screen's Preferences, Save, then Generate with Java Classes ticked. In a
+  spec: `"preferences": {"JAVA_PAYEMNTS_FUNCTION": "Y"}`, then rerun `gen_radxml.py`.
+- **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` warns for an OBPM module (PM/PX) radxml whose
+  `JAVA_PAYEMNTS_FUNCTION` is not `Y`. Reference 30 sections 4 and 4.1 and the odt-radxml skill name the screen
+  Preferences.
 
 ---
 
