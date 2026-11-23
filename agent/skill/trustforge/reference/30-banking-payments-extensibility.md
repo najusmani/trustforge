@@ -37,6 +37,7 @@ function or the user mentions OBPM.
   KERNEL function, CLUSTER or CUSTOM redefines it.
 
 ## 3. Back end, maintenance function IDs (PL/SQL, same as FCUBS)
+OBPM's own `PMD*` maintenances are Java functions: for a new OBPM screen see 4.1 first.
 - **Generated packages.** RAD generates `<MOD>PKS_<FID>_MAIN` plus the hook packages `_KERNEL`, `_CLUSTER` and
   `_CUSTOM`.
   - The template is `<Module>PKS_<FunctionID>_<ReleaseType>`, for example `PAPKS_PADOVIEW_CUSTOM`.
@@ -99,6 +100,39 @@ The generated Java:
 This is the OBPM counterpart of the FCUBS 1:1 custom table pattern (file 28). The same rules apply: the key column is
 present as a field, the Block PK Columns are generated, and only the custom layer is edited.
 
+### 4.1 New OBPM maintenance: Java back end (seen in the OBPM 14.7 jars)
+OBPM's own maintenances (`PMD*`) are Java functions, not PL/SQL. **Design a new OBPM maintenance with Java
+functions** and put its validations in Java; offer the PL/SQL hook package of section 3 only as an alternative the
+user chooses. Copy the pattern of a similar shipped screen (for a customer-keyed rule: `PMDCSMLK`).
+- **Generated units per screen:** def class `com.ofss.pmts.pm.def.<FID>` (PMCommon.jar), DTO
+  `com.ofss.pmts.pm.dto.<Name>Dto`, entity `com.ofss.pmts.pm.<Name>`, `<Name>Kernel`, `<Name>KernelSys`,
+  `<Name>KernelSysDao`, `<Name>Assembler`; in a CUSTOM release also `<Name>Custom` (and `CustomSys`).
+- **`<Name>` comes from the master block's XSD node** with the hyphens removed: `Pmtms-Cust-Service-Model-Link` gives
+  `PmtmsCustServiceModelLink*`, `Hst-Param` gives `HstParam*`. Pick a distinctive node (`BLK_<DATA SOURCE>` /
+  `<Data-Source>`), never a generic one like `Limit-Master`.
+- **DTO properties follow the data source columns** (camel case: `CUSTOMER_SERVICE_MODEL` -> `getCustomerServiceModel`),
+  not the block field names. NUMBER columns are `BigDecimal`. The DTO extends `MaintainableDto` (audit fields).
+- **Hooks:** `public class <Name>Custom extends <Name>Kernel` with constructor `(RequestProfile)`. The framework
+  (`PMTransactionProcessor`) calls `preCheckMandatory(curDto)`, `postCheckMandatory(curDto)`,
+  `pre/postDefaultAndValidate(prevDto, curDto)`, `pre/postQuery`, `pre/postPersist` - **the record being saved is the
+  second argument**. Validations go in `postDefaultAndValidate`; defaults that the mandatory check needs go in
+  `preCheckMandatory`.
+- **Raising an error:** `profile.addMessage(new Message(code))` or `new Message(code, Object[] params)`, then
+  `return false`. The kernel class keeps its `profile` private, so the Custom class stores its own. Check
+  `profile.getAction()` (`NEW`, `MODIFY`, `DELETE`, `AUTH`, `CLOSE`, `REOPEN`, `EXECUTEQUERY`).
+- **Host:** OBPM maintenances are per host. Key the table on `HOST_CODE` as PMDCSMLK does, default it from
+  `RequestProfile.getHostCode()`, and bind host-scoped LOVs on it.
+- **OBPM tables to use** (not the FCUBS ones): currency `CYTM_CCY_DEFN_MASTER` (CCY_CODE, CCY_NAME,
+  MAINTENANCE_COUNTRY); customers `STTM_CORE_CUSTOMER` (CUSTOMER_NO, CUSTOMER_NAME1, HOST_CODE; **no customer
+  category**). OBPM's customer category is the **Customer Service Model**: master `PMTM_CUST_SERVICE_MODEL`
+  (CUSTOMER_SERVICE_MODEL, CUST_SERVICE_MODEL_DESC, HOST_CODE), linked per customer in
+  `PMTMS_CUST_SERVICE_MODEL_LINK` (CUSTOMER_NO, HOST_CODE -> CUSTOMER_SERVICE_MODEL), screen PMDCSMLK.
+- **Database access from Java:** the JTA data source named in PMEntities.jar `META-INF/persistence.xml` (unit
+  `..._ENTITY_ID1`, usually `jdbc/fcjdevDS`). A connection from it inside the request's JTA transaction commits or
+  rolls back with it. JDBC cannot read a PL/SQL BOOLEAN: give called functions a VARCHAR2 'Y'/'N' wrapper.
+- **Finding these facts:** the application EAR holds the jars (`PMApps`, `PMKernel`, `PMCommon`, `PMDto`,
+  `PMEntities`, `PMKernelDao`). `javap -p` gives signatures; `javap -c` on the caller shows how a hook's result is used.
+
 ## 5. OBPM-specific: Java processing hooks (`PMTM_EXTENSION_CLASSES`)
 - **Mechanism.** Payment processing calls Java extension points by **KEY**. The table `PMTM_EXTENSION_CLASSES (KEY,
   CLASS_NAME)` maps a key to the implementing class.
@@ -130,8 +164,8 @@ present as a field, the Block PK Columns are generated, and only the custom laye
 | VIRTUAL_ACC_DERIVE | - | IVirtualAccountDeriveXborder | Derive the credit account (virtual accounts) |
 | COID_DEFAULT | - | ICoIdDeriveService | Derive company id |
 | RTGS_SKIP_VAL | PM | IRtgsSkipValidationService | Skip RTGS validations by payment type |
-| BO_VALIDATION | - | IBOValidationHandler | Business-override validations, book transfer |
-| BO_EXT_VALIDATION | - | IExtBOValdiationHandler | External business-override validation, cross-border |
+| BO_VALIDATION | - | IBOValidationHandler | Business-override validations, book transfer (see 5.1) |
+| BO_EXT_VALIDATION | - | IExtBOValdiationHandler | External business-override validation, incoming SWIFT only (see 5.1) |
 | BEN_DERIVE | - | IBeneficiaryDeriveService | Beneficiary / credit account derivation |
 | NONSTP_KEY | - | INonStpHandlerService | Non-STP queue decision |
 | BLOCK3_SKIP | PX | IBlock3SkipService | Remove block 3 (txn ref, msg type, network -> boolean) |
@@ -142,6 +176,30 @@ Other keys in `PMTM_EXTENSION_CLASSES` without a documented interface: `ACCOUNTI
 
 Interfaces and parameters vary by patch set: the workbook names the version each hook arrived in, from 14.2.0.2.1 to
 14.3.0.4.3. Confirm against the user's OBPM jars before writing a class.
+
+### 5.1 Hook details read from the OBPM 14.7 jars
+- **`BO_VALIDATION`** - `com.ofss.pmts.xml.fcubs.IBOValidationHandler` (PMApps.jar), seven methods to implement:
+  `List<Message> validateBusinessRules(CommonSchemaPainDto)` plus overloads for `AchCreditInTxnDriver`,
+  `AchCreditOutTxnDriver`, `AchDebitOutTxnDriver` and `validateBusinessRulesFcust(GenericWiresOutDriverDto |
+  GenericWiresInDriverDto | AchInTxn)`.
+  - Book transfer, cross-border outgoing and incoming, ACH outgoing and instrument issue build a
+    `CommonSchemaPainDto` and call the first method. A non-empty list moves the payment to the business-override
+    queue (cross-border outgoing: status E, queue BO, first message as error code).
+  - `CommonSchemaPainDto` has `getTxnrefno` (BigDecimal), `getHostCode`, `getCustomerNo`, `getSourceCode`,
+    `getNetworkCode`, `getTxfrCcy`, `getxfrAmt`, `getLcyAmt`, `getBookDate`, `getTxnBranch` - no customer category.
+  - Return an override as `new Message(code, Object[] params)` with type `Message.ERROR`.
+- **`BO_EXT_VALIDATION`** - `IExtBOValdiationHandler.doValidateExtBuisnessOveride(Request)`: called only for
+  incoming SWIFT (`XBorderOutSwiftService`); the request has DCN, branch, transfer type and institution fields but
+  **no customer or amount**. Response: execution status S/F, validation status A/R/O, error code/desc.
+- **`POP_QUEUE_ACTION`** - `com.ofss.pmts.service.eca.IPopQueueAction.populateQueueAction(Request)`: called by queue
+  cancel, exception-queue actions (including the BO queue), accounting and ECA, with `txnRefNo`, `queueRefNo`,
+  `queueCode`, `queueAction` (`C` cancel, `R` reject seen), `remarks`, `makerId`. **The response's queue action
+  replaces the caller's action**: always copy the request's action into the response unless you mean to change it.
+  Returns (pacs.004, ACH returns) do not pass this key.
+- **`AUTH_SAVE_STATUS`** - `com.ofss.pmts.handler.IAuthOrSaveStatus.authSaveStatus(Request)` (authOrSave,
+  RequestProfile, dtoObject), from `PMRequestHandler`.
+- **`POST_PERSIST_CUSTOM` / `CUSTOM_POST_PERSIST`** - `IPostPersistCustom` / `ICustomPostPersist` (prevDto, curDto ->
+  success flag); used by branch incoming transactions only.
 
 ## 6. Other OBPM extension options (no code)
 - **UDF fields** (function `UDDMAINT`): extra data on maintenance screens without table changes. Bank users configure

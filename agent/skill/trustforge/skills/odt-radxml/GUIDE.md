@@ -11,6 +11,8 @@ Reference: `../../reference/04-screen-development-core.md` (primary), plus the c
 
 ## A. Designing (new screen or new elements)
 
+> **OBPM (Oracle Banking Payments, modules PM/PX):** OBPM's own maintenances are Java functions. Read `../../reference/30-banking-payments-extensibility.md` section 4.1 first: the master block's XSD node names the generated Java classes (`<Name>Dto/Kernel/Custom`), validations go in `<Name>Custom.postDefaultAndValidate(prevDto, curDto)`, rules are keyed per `HOST_CODE`, and LOVs use OBPM tables (`CYTM_CCY_DEFN_MASTER`, `STTM_CORE_CUSTOMER`, customer category = customer service model `PMTM_CUST_SERVICE_MODEL`). The back end (Java or PL/SQL) is the user's choice; recommend Java.
+
 Work in ODT's order and produce a design table for each step:
 
 1. **Header** - Function Id (8 chars; module + D/C/R/N), Function Type, Category, Header/Footer template (Maintenance: Maint Audit; Online: NONE with manual TXNSTAT/AUTHSTAT footer, or PROCESS for process flow).
@@ -33,7 +35,7 @@ Format facts: `../../reference/27-radxml-format.md`. Tools in `scripts/` (run wi
 1. Write a spec JSON from the design (copy `templates/spec_example_STDCURSK.json`). Upper-case keys are ODT tag names/values; lower-case keys are structure (`menu`, `datasources`, `lovs[columns]`, `blocks[datasources, fields[return_fields, bind_vars, custom_attrs, events]]`, `screens[body_tabs[sections[partitions]]]`, `fieldsets[fields]`, `summary[fields]`, `callforms`, `launchforms`, `web_service`). Data source columns are derived from block fields (DBT/DBC); do not list Maint Audit columns.
 2. `python -I scripts/gen_radxml.py <spec.json> output/radxml/<FID>_RAD.xml` - builds from the skeleton `templates/radxml_skeleton_14.7.xml`, writes empty `<RAD_KERNEL/>` + `RAD_CUSTOM` for a CUSTOM release, every element tagged with the release. It refuses tags not in the skeleton.
 3. `python -I scripts/check_radxml.py output/radxml/<FID>_RAD.xml` - fix every ERROR; review WARNINGs.
-4. User: ODT > Function Generation, in a **CUSTOM** release, **Action = Load** (not Parent Xml), browse the file, then Save. Open each node once to confirm, then Generate (tick Custom Package Spec/Body; see reference 27 for the list).
+4. User: ODT > Function Generation, in a **CUSTOM** release, **Action = Load** (not Parent Xml), browse the file, then Save. Open each node once to confirm, then Generate (tick Custom Package Spec/Body; see reference 27 for the list). OBPM Java functions: tick **Java functions** in User Preferences and **Java Classes** on Generate instead of the package boxes.
 5. Keep the ODT-saved radxml from the generated zip as the master copy from then on (edit that, section C).
 
 Other ODT versions: rebuild the skeleton from the user's own ODT saves, freshest NEW function first, then a large Oracle radxml for missing element types:

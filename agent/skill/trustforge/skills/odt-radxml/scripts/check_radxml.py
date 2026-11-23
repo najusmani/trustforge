@@ -199,6 +199,20 @@ for n, l in lovs.items():
         if not c.findtext('COL_HEADING'):
             warns.append(f'LOV {n}.{c.get("ID")}: column heading label missing')
 
+# ---- OBPM (Oracle Banking Payments) screens: OBPM's own tables, not the FCUBS ones (reference 30, 4.1)
+module = (root.findtext('.//MODULE_ID') or '').upper()
+if module in ('PM', 'PX'):
+    obpm_tables = (
+        (r'\bCYTMS?_CCY_DEFN\b', 'CYTM_CCY_DEFN_MASTER (OBPM currency table)'),
+        (r'\bSTTMS?_CUSTOMER\b', 'STTM_CORE_CUSTOMER (OBPM customer table; category = customer service model)'),
+        (r'\bSTTMS?_CUSTOMER_CAT\b', 'PMTM_CUST_SERVICE_MODEL (OBPM customer category = customer service model)'),
+    )
+    for n, l in lovs.items():
+        q = (l.findtext('LOV_QUERY') or '').upper()
+        for pat, use in obpm_tables:
+            if re.search(pat, q):
+                warns.append(f'LOV {n}: OBPM module {module} - FCUBS table in the query, use {use}')
+
 # ---- screens
 mains = [n for n, s in screens.items() if s.findtext('MAIN_SCREEN') == 'Y']
 if len(mains) != 1:
