@@ -28,6 +28,8 @@ Run from this folder with `python3 -I`:
 - `skills/odt-radxml/scripts/make_skeleton.py` - rebuild the tag skeleton from other ODT saves
 - `skills/odt-customize/scripts/check_odt_zip.py <FID>_RAD.ZIP [--custom-body <body.sql>]` - check an ODT-generated zip
   before deploy (missing amendable/label/LOV/menu INCs, data sources, ODT's empty CUSTOM body stub)
+- `skills/odt-hook-code/scripts/check_plsql_body.py <body.sql>` - run on every package body before delivering it
+  (declarations after a procedure = PLS-00103, IF/LOOP/parenthesis balance, END names); not a compiler
 
 ## Known problems first
 `reference/29-lessons-learned.md` lists problems already met in real deployments. Read it before delivering, and

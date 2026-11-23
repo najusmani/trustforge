@@ -50,6 +50,13 @@ Prefer the user's existing idioms from their kernel/cluster code where they diff
 - Multi-record blocks: loop the collection; handle empty collections.
 - No COMMIT/ROLLBACK inside hooks (the framework controls transactions) unless the user's code base does it.
 - Use bind-safe SQL, no dynamic SQL from user input.
+- In a package body, every package-level variable, constant, type and cursor goes **before** the first procedure or
+  function (otherwise PLS-00103 at compile time).
+- Mark every hand-written addition (`--<FID>_<FEATURE>`), log one line saying what the code did or why it skipped, and
+  give the `USER_SOURCE` query that proves the delivered body is the compiled one (lessons L5, L6).
+- **Before delivering any package body, run** `python3 -I scripts/check_plsql_body.py <body.sql>` and fix every ERROR:
+  declaration order, IF/LOOP/parenthesis balance per subprogram, matching `END <name>;`. It does not replace the
+  compiler; say so, and ask the user for the compile result.
 
 ## Release JavaScript `<FID>_CUSTOM.js`
 - Not generated; developer creates it. Functions are named with the layer suffix: `fnPreLoad_CUSTOM()`, `fnPostLoad_CUSTOM()`, `fnPreNew_CUSTOM()`, `fnPostNew_CUSTOM()` and other `fnPre<Action>_CUSTOM` / `fnPost<Action>_CUSTOM` handlers; CUSTOM overrides same-named KERNEL/CLUSTER functions.

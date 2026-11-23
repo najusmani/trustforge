@@ -14,6 +14,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L3 | `RD-VALS-027` on ODT save | PK column not a field of its data source |
 | L4 | `RD-VALS-60` on ODT save | Duplicate XSD tag on a new field |
 | L5 | A transaction-time CUSTOM extension (extra charge, extra processing) has no effect, no error | Hook body not deployed, test data outside the design's conditions, or the channel never calls the hook |
+| L6 | `PLS-00103: Encountered the symbol "<NAME>" when expecting one of the following: begin end function pragma procedure` compiling a package body | A package-level declaration placed after a procedure/function body |
 
 ---
 
@@ -83,6 +84,20 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
     teller, switch/ATM, upload, payments) and list which hooks it calls; design against that list
     (`28-extending-kernel-function.md` section 6).
   - Unit tests for each channel state the exact debug lines expected, and test data that meets every condition.
+
+## L6 - PLS-00103 on a package-level declaration
+- **Seen:** `CSPKS_ARC_CUSTOM` body delivered for IFDATMMN charge 6, FCUBS 14.7, 2026-11-23 (first compile attempt;
+  the error had been in the delivery since 2026-11-20, which is also why the body was never deployed).
+- **Symptom:** `PLS-00103: Encountered the symbol "G_CHG6_TAG" when expecting one of the following: begin end function
+  pragma procedure` at the first package variable; the rest of the compiler output is only "Hint: Parameter … is
+  declared but never used" (harmless, from Oracle's stub hooks).
+- **Cause:** in a package body all declarations (variables, constants, types, cursors) must precede the first
+  procedure or function body. A helper procedure (`DBG`) had been placed above the new globals.
+- **Fix:** move the declarations above the first procedure/function and compile again.
+- **Prevention:** `../skills/odt-hook-code/scripts/check_plsql_body.py` (check `order`) flags any package-level
+  declaration after a subprogram body, and checks IF/LOOP/parenthesis balance and `END <name>;` per subprogram.
+  The odt-hook-code skill runs it on every package body before delivery. TrustForge cannot compile; the user's
+  compile result is the final check.
 
 ---
 
