@@ -15,6 +15,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L4 | `RD-VALS-60` on ODT save | Duplicate XSD tag on a new field |
 | L5 | A transaction-time CUSTOM extension (extra charge, extra processing) has no effect, no error | Hook body not deployed, test data outside the design's conditions, or the channel never calls the hook |
 | L6 | `PLS-00103: Encountered the symbol "<NAME>" when expecting one of the following: begin end function pragma procedure` compiling a package body | A package-level declaration placed after a procedure/function body |
+| L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
 
@@ -98,6 +99,18 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   declaration after a subprogram body, and checks IF/LOOP/parenthesis balance and `END <name>;` per subprogram.
   The odt-hook-code skill runs it on every package body before delivery. TrustForge cannot compile; the user's
   compile result is the final check.
+
+## L7 - PLS-00231: private function used inside SQL
+- **Seen:** `IFPKS_ARC_CHG6` body (new helper package for an extra ARC charge), FCUBS 14.7, 2026-11-23 (first compile).
+- **Symptom:** `PLS-00231: function 'FN_SOURCE' may not be used in SQL`, `PL/SQL: ORA-00904: "FN_SOURCE": invalid
+  identifier` and `PL/SQL: SQL Statement ignored` on an `INSERT ... VALUES (...)` that called the function.
+- **Cause:** SQL runs in the SQL engine, which can only call schema-level functions or functions published in a
+  package **spec**. A function declared only in the package body is invisible to it. Package variables are fine
+  (they are bound).
+- **Fix:** assign the function result to a local variable before the statement and use the variable (or publish the
+  function in the spec).
+- **Prevention:** `../skills/odt-hook-code/scripts/check_plsql_body.py` (check `sqlfn`) flags a body-only function used
+  inside `SELECT` / `INSERT` / `UPDATE` / `DELETE` / `MERGE`; it reads the spec from a `.spc`/`.pks` next to the body.
 
 ---
 

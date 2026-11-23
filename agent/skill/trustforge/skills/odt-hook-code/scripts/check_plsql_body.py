@@ -1,4 +1,4 @@
-"""Static checks on a hand-written PL/SQL package body before it is compiled (lesson L6 in
+"""Static checks on a hand-written PL/SQL package body before it is compiled (lessons L6/L7 in
 reference/29-lessons-learned.md). It does not replace the compiler; it catches mistakes that show up only at
 compile time in the bank's environment, when TrustForge cannot compile.
 
@@ -9,6 +9,8 @@ Checks:
           (PLS-00103 "Encountered the symbol ... when expecting begin end function pragma procedure")
   blocks  IF / END IF, LOOP / END LOOP, CASE / END CASE and parentheses balance per subprogram
   ends    every PROCEDURE/FUNCTION body that names itself at END uses the same name
+  sqlfn   a function declared only in the body (not the spec) called inside a SQL statement (PLS-00231, lesson L7);
+          the spec is read from a .spc/.pks file next to the body
 Exit code 1 when an error is found.
 """
 import re
@@ -50,6 +52,43 @@ def strip(text):
             out.append(text[i])
             i += 1
     return "".join(out)
+
+
+def spec_functions(path, s):
+    """Function names declared in the package spec: a sibling .spc/.pks file or a PACKAGE (not BODY) in the file."""
+    import os
+    texts = []
+    stem = os.path.splitext(path)[0]
+    for ext in (".spc", ".pks", ".SPC", ".PKS"):
+        if os.path.exists(stem + ext):
+            texts.append(strip(open(stem + ext, encoding="utf-8", errors="replace").read()))
+    m = re.search(r"PACKAGE\s+(?!BODY\b)[A-Z0-9_$#.\"]+\s+(IS|AS)\b(.*?)\bEND\b", s, re.I | re.S)
+    if m:
+        texts.append(m.group(2))
+    if not texts:
+        return None
+    return {n.upper() for t in texts for n in re.findall(r"\bFUNCTION\s+([A-Z0-9_$#]+)", t, re.I)}
+
+
+def check_sql_private_functions(path, s):
+    """PLS-00231: a function declared only in the package body cannot be called inside a SQL statement."""
+    errs = []
+    body_fns = {n.upper() for n in re.findall(r"^\s*FUNCTION\s+([A-Z0-9_$#]+)", s, re.I | re.M)}
+    public = spec_functions(path, s)
+    private = body_fns - (public or set())
+    if not private:
+        return errs
+    for m in re.finditer(r"\b(INSERT\s+INTO|UPDATE\s+[A-Z0-9_$#.]+\s+SET|DELETE\s+FROM|MERGE\s+INTO|SELECT)\b[^;]*;",
+                         s, re.I | re.S):
+        stmt = m.group(0)
+        for name in sorted(private):
+            for u in re.finditer(rf"(?<![A-Z0-9_$#.]){re.escape(name)}\b", stmt, re.I):
+                line = s.count("\n", 0, m.start() + u.start()) + 1
+                note = "" if public is not None else " (no spec found: pass the .spc next to the body to confirm)"
+                errs.append(f"{path}:{line}: [sqlfn] {name} is not in the package spec and is used inside a SQL "
+                            f"statement (PLS-00231): assign it to a local variable before the statement{note}")
+                break
+    return errs
 
 
 def check(path):
@@ -104,6 +143,7 @@ def check(path):
             errs.append(f"{path}:{a}: [blocks] {name}: END CASE without CASE")
     if depth_name is not None:
         errs.append(f"{path}:{start}: [ends] {depth_name}: no matching END {depth_name};")
+    errs += check_sql_private_functions(path, s)
     print(f"{path}: {len(bodies)} subprograms checked, {len(errs)} error(s)")
     for e in errs:
         print("  ERROR", e)

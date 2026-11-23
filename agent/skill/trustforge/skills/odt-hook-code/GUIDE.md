@@ -55,7 +55,8 @@ Prefer the user's existing idioms from their kernel/cluster code where they diff
 - Mark every hand-written addition (`--<FID>_<FEATURE>`), log one line saying what the code did or why it skipped, and
   give the `USER_SOURCE` query that proves the delivered body is the compiled one (lessons L5, L6).
 - **Before delivering any package body, run** `python3 -I scripts/check_plsql_body.py <body.sql>` and fix every ERROR:
-  declaration order, IF/LOOP/parenthesis balance per subprogram, matching `END <name>;`. It does not replace the
+  declaration order, IF/LOOP/parenthesis balance per subprogram, matching `END <name>;`, body-only functions used
+  inside SQL (PLS-00231: keep the `.spc` next to the body; assign the result to a local variable first). It does not replace the
   compiler; say so, and ask the user for the compile result.
 
 ## Release JavaScript `<FID>_CUSTOM.js`
