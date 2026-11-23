@@ -212,8 +212,8 @@ export default async function Home() {
               <div>
                 <span className={`${s.eyebrow} ${s.rise} ${s.r1}`}>AI agent for Oracle FLEXCUBE · Built on Anthropic</span>
                 <h1 id="hero-h" className={`${s.serif} ${s.h1} ${s.rise} ${s.r2}`}>
-                  FLEXCUBE customizations,<br />
-                  <em className={s.gold}>forged in conversation.</em>
+                  Oracle FLEXCUBE customization,<br />
+                  <em className={s.gold}>forged by an AI agent.</em>
                 </h1>
                 <p className={`${s.heroLead} ${s.rise} ${s.r3}`}>
                   Describe the change and upload your objects. TrustForge, an AI assistant for FLEXCUBE UBS 14.6 and
