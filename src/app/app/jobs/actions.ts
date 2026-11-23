@@ -19,6 +19,7 @@ import {
 import { JOB_TYPE_LABEL, LAYERS, PLAN_CONFIG, RELEASES } from "@/lib/plans";
 import { getMembership, requireUser } from "@/lib/teams";
 import { headroomForNewJob, limitReachedMessage, startTurn, UsageLimitReached } from "@/lib/usage";
+import { welcomeForNewJob } from "@/lib/welcome";
 
 function fail(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -93,6 +94,7 @@ export async function createJob(formData: FormData) {
   try {
     uploaded = await uploadFiles(files, new Set());
     const title = requirement.split("\n")[0].slice(0, 90);
+    const { lessonCount, welcome } = await welcomeForNewJob(user.id);
 
     const [job] = await db
       .insert(jobs)
@@ -108,6 +110,8 @@ export async function createJob(formData: FormData) {
         actorId: user.id,
         budgetCents,
         costOpen: 1,
+        lessonCount,
+        welcome,
       })
       .returning();
     jobId = job.id;

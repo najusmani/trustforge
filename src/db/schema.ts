@@ -158,6 +158,10 @@ export const jobs = pgTable(
     budgetCents: integer("budget_cents"),
     /** True while the session may still spend (a turn was started and its cost isn't fully counted yet). */
     costOpen: integer("cost_open").notNull().default(0),
+    /** Lessons TrustForge knew when the job started (to count what is new for the member's next job). */
+    lessonCount: integer("lesson_count"),
+    /** Welcome shown as TrustForge's first chat message. */
+    welcome: text("welcome"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },

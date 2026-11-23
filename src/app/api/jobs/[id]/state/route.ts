@@ -18,6 +18,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const withOutputs = new URL(req.url).searchParams.get("outputs") === "1";
   try {
     const view = await getJobView(found.job.sessionId, withOutputs);
+    // The job's welcome is TrustForge's first chat message, right after the user's request.
+    if (found.job.welcome) {
+      const firstUser = view.items.findIndex((it) => it.kind === "user");
+      const at = firstUser >= 0 ? view.items[firstUser].at : "";
+      view.items.splice(firstUser + 1, 0, { kind: "agent", id: `welcome-${found.job.id}`, text: found.job.welcome, at });
+    }
     // Count new cost against the member who started the current turn, then report this member's usage.
     await recordCost(found.job, view.costCents ?? 0, view.status).catch((e) => console.error("[usage] record failed", e));
     view.usage = await memberUsage(found.team, userId, { sync: false, exceptJobId: found.job.id }).catch(() => null);
