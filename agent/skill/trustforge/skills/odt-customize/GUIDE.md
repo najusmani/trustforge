@@ -58,6 +58,11 @@ Write `output/DESIGN.md` (start from `templates/DESIGN.md`):
 - Risks: refresh/upgrade limits (`09-source-upgrade.md`), naming conflicts (use a custom prefix, e.g. `FST_U...`, `BLK_U...` style only if the user's convention allows; never reuse kernel names).
 
 For large or ambiguous requirements, show the design to the user and wait for agreement before building.
+**Functional choices are always the user's.** If there is more than one way to make the feature behave, present
+the options and ask before building, even when one looks clearly better. This covers which records or channels
+it applies to, what the bank sees on screens/advices/entries, waivable or not, and amount tags. Never switch
+designs on your own while fixing a reported problem: propose the new design and wait. Example: IFDATMMN charge 6,
+2026-11-23. A "lend a free kernel slot" route was built without asking and was rejected.
 
 ## Step 5 - Build artifacts
 

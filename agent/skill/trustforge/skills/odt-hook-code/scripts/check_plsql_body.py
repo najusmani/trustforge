@@ -61,6 +61,7 @@ def check(path):
     depth_name = None
     seen_sub = False
     bodies = []  # (name, start, end)
+    last_sig, last_no = "", 0  # last non-blank line (comments/strings blanked)
     for no, line in enumerate(lines, 1):
         u = line.upper()
         if depth_name is None:
@@ -79,8 +80,13 @@ def check(path):
             if re.match(rf"^\s*END\s+{re.escape(depth_name)}\s*;", u):
                 bodies.append((depth_name, start, no))
                 depth_name = None
-            elif SUB.match(u) and re.search(r"\b(IS|AS)\s*$", u) is None and re.match(r"^\s{0,3}(PROCEDURE|FUNCTION)\b", line):
-                pass
+            elif SUB.match(u) and re.match(r"^\s*END\s*;\s*$", last_sig):
+                # previous subprogram closed with a bare "END;" (valid PL/SQL): close it, open this one
+                bodies.append((depth_name, start, last_no))
+                depth_name = SUB.match(u).group(2)
+                start = no
+        if u.strip():
+            last_sig, last_no = u, no
     for name, a, b in bodies:
         seg = "\n".join(lines[a - 1:b]).upper()
         ifs = len(re.findall(r"(?<![A-Z0-9_$#])IF\b", seg)) - 2 * len(re.findall(r"\bEND\s+IF\b", seg))

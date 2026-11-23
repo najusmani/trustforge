@@ -52,13 +52,19 @@ WHERE REGEXP_LIKE(UPPER(text), '<slot-N column regex>') ORDER BY name, type, lin
 SELECT name, type, SUBSTR(text,1,80) FROM user_source WHERE line = 1 AND name IN (...);
 ```
 - Then ask for the spec + body of the core package and its `_CLUSTER` / `_CUSTOM` layers.
-- **Prefer lending a free slot** when the kernel is fixed-slot but a record does not use every slot: in the pick-up
-  hook that runs after the record is read and before the kernel copies it into its working structures (for ARC:
-  `CSPKS_ARC_CUSTOM.PR_GET_ARC_ROW` with call id 1), copy the extra slot's fields into the first free slot of the
-  record in memory. The kernel then handles it natively in every channel (screens, waiver, entries with the slot's
-  amount tag, reversal, advices). Generate the field mapping from the kernel radxml data source and check every
-  target column exists; keep the used slots in order; guard against lending twice. Only records that use every
-  slot need an N+1 workaround. (IFDATMMN charge 6, 2026-11-23.)
+- **The user chooses how the new slot behaves; never pick it yourself.** Before writing code, present the
+  options with what the bank will see and ask (channels, visibility on screens/advices, waivable or not, which
+  records may carry it, amount tag). Two designs exist:
+  - **Own slot (default to propose).** Calculate the new slot in CUSTOM code from the record and the kernel's
+    calculated slots 1..N (for ARC: in `CSPKS_ARC_CUSTOM.FN_CHARGE_PICKUP_POST`), then post it as entries with its
+    own amount tag (`CHG_AMT6`). Post it from the hook each channel really calls: for teller/switch,
+    `DEPKS_RTL_TELLER_CUSTOM.PR_BUILD_ACCTNG_ENTRIES` call id 1 (once per transaction, after the main entries); for
+    other netting flows, `CSPKS_ARC_CUSTOM.PR_NET_CHARGES_PRE`. Use a duplicate guard so it is posted once, and an
+    optional log table for enquiry. Limits: not on kernel screens or advices, not waivable.
+  - **Lending a free kernel slot** (copy the extra slot into the first unused slot 1..N in memory at pick-up). This
+    one only with the user's explicit agreement. It changes what the bank sees: the slot is posted under another slot's
+    amount tag and shown as that charge, and it fails on records that use every slot. Rejected by the user on IFDATMMN
+    charge 6 (2026-11-23).
 - **Trace the channels before designing hooks** (lesson L5): ask for a debug log of one real transaction per channel
   that must use the new data (branch screen, teller, switch/ATM, upload, payments) and list the CUSTOM hooks each one
   calls. The same calculation can be posted by different code per channel: teller and switch build charge entries in
