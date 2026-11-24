@@ -24,8 +24,9 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L14 | OBPM: Authorize / Delete give `ST-COM036 Response is empty`; server log `PMRequestParser-->some values are null --> 19~21`, `ArrayIndexOutOfBoundsException` in `getActualFieldValues` | A block field with no data source column (DESC field) in a Java-functions screen |
 | L15 | OBPM: a Java processing hook does nothing (payment not stopped, no error); log `LOOKUP_KEY -- <KEY>` then `Class Name not found return NULL` | Hook class not registered in `PMTM_EXTENSION_CLASSES` (key exists, CLASS_NAME empty); hook logging with `java.util.logging` never shows in the OBPM debug |
 | L16 | OBPM BO_VALIDATION hook runs but checks nothing; its debug shows amount / currency `null` for a book transfer | Book transfer fills the pain fields (`Instdamt`, `Instdamtccy`, `Eqvtamt`), not `getxfrAmt` / `getTxfrCcy` / `getLcyAmt` / `getBookDate` |
-| L17 | OBPM: a business-override hook shows its message but `Failed to Save the Record` (payment not in the BO queue); message text keeps `$4` | Message type `E` rolls the transaction back (overrides must be `O`); OBPM stops substituting at the first `$n` missing from the text |
+| L17 | OBPM: a business-override hook shows its message but `Failed to Save the Record` (payment not in the BO queue); message text keeps `$4` | Message type `E` rolls the transaction back (use `I`, see L19); OBPM stops substituting at the first `$n` missing from the text |
 | L18 | OBPM: rows written by a Java hook stay after the payment is rolled back (`Failed to Save`) | Hook used a JNDI data-source connection, which is not in the payment's transaction |
+| L19 | OBPM: user is asked to accept the hook's message; after Accept the screen shows `ST-COM036 Response is empty`; log `Finally isOvdAccepted>>> false`, `Throwing FailureException with ErrorType O` | Hook returned type `O` (user override). A business-override reason must be type `I` |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -262,9 +263,9 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
     `new Message(code, params)` with `setType(Message.ERROR)`.
   - `PMMessageService.replaceSubstitutions` turns `$1`, `$2`, `$3` ... into `{0}`, `{1}` ... in order and **stops at
     the first `$n` not found in the text**. The message used `$1 $2 $4` (no `$3`), so `$4` was never replaced.
-- **Fix:** overrides from processing hooks use `setType(Message.WARNING)` (= `"O"`). The payment then goes to the
-  business-override queue and the save succeeds. Number message parameters from `$1` without gaps; order the
-  hook's parameters so every message uses a prefix (`$1..$k`).
+- **Fix:** do not use `E` for a business-override reason. Use type `I` (lesson L19); `O` led to the next problem.
+  Number message parameters from `$1` without gaps, and order the hook's parameters so every message uses a prefix
+  (`$1..$k`).
 - **Prevention:** reference 30 section 5.1 and the odt-static-data message rules. Before writing a message, check that
   its `$n` run without gaps. Not checked by a script (messages are SQL text).
 
@@ -279,6 +280,24 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   `EmsFileHandoffHelper` does; never close or commit it. Keep JNDI only as a logged fallback. Release the stray rows.
 - **Prevention:** reference 30 section 4.1 ("Database access from Java") now says this. Test a rolled-back payment and
   check the hook's table. Not mechanically checkable.
+
+## L19 - OBPM: BO hook message must be type `I`, not `O`
+- **Seen:** `BO_VALIDATION` limit hook, OBPM 14.7, 2026-11-23, book transfer 200 against a 100 limit. The first Save
+  showed the limit text with an Accept button. After Accept: `ST-COM036 Response is empty`.
+- **Log (accept pass):** the override was logged (`Error Code to log in override PM-CLMT-101`,
+  `Checking whether msgId already exists in OverrideMaster table ... Count = 0`), then `Finally isOvdAccepted>>>
+  false`, `persist has returned false`, `Throwing FailureException with ErrorType O`
+  (`PMTransactionProcessor.scanError`).
+- **Cause:** type `O` is a **user override**: the screen asks the user to accept it. OBPM's own business-override
+  outcome `PA-TXP-083 Payment moved to business override queue` is type `I`. With `O`, the first pass is rolled back,
+  so the accept pass finds no confirmed override and fails.
+- **Fix:** return business-override reasons as `Message.INFORMATION` (`"I"`) and keep the `ERTB_MSGS` type `I`. The
+  payment is saved into the BO queue in one pass, with the reason shown and no Accept. An authoriser decides in the
+  BO queue (the requirement "on breach = business override").
+- **Prevention:** reference 30 section 5.1. Message type map for OBPM processing hooks:
+  - `E`: rolls back;
+  - `O`: asks the user;
+  - `I`: continues, and BO_VALIDATION then moves the payment to the BO queue.
 
 ---
 

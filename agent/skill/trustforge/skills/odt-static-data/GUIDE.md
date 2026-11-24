@@ -40,7 +40,8 @@ Menu (SMTB_MENU, SMTB_FUNCTION_DESCRIPTION, SMTB_ROLE_DETAIL, SMTB_FCC_FCJ_MAPPI
 - Table `ERTB_MSGS` (FCUBS and OBPM 14.7; synonym `ERTBS_MSGS` in some schemas). Columns seen in a live 14.7 table:
   `ERR_CODE, LANGUAGE, MESSAGE, TYPE, CONFIRMATION_REQD, FUNCTION_ID, MAX_SUB_PARAM, MODIFIABLE, BATCH_TYPE,
   DERIVED_MSG, OVD_CLASS, PARAM_TYPES, PARAMS_TO_MATCH, PARAMS_TO_COMPARE, DIRECTION_OF_COMPARISION`.
-  - TYPE `E` = error (stops the save), `O` = override, `I` = information. MAX_SUB_PARAM = number of `$1`..`$n` used.
+  - TYPE `E` = error (stops the save), `O` = override the user must accept, `I` = information. MAX_SUB_PARAM = number of
+    `$1`..`$n` used. OBPM business-override (BO queue) reasons from hooks: type `I` (lesson L19).
   - Number `$1`..`$n` without gaps in each text: OBPM stops substituting at the first missing number (lesson L17).
   - Write a re-runnable `MERGE INTO ertb_msgs ... ON (err_code, language)`; insert `CONFIRMATION_REQD 'N'`,
     `MODIFIABLE 'N'`, `DERIVED_MSG 'N'`, the function id, NULL for the rest; end with a SELECT of the rows and a

@@ -226,18 +226,17 @@ Interfaces and parameters vary by patch set: the workbook names the version each
     leaves `xfrAmt, TxfrCcy, LcyAmt, lCcy, BookDate` null. Read each flow's assembler with `javap -c` before relying
     on a field; host business date: `HostCodeService.getHostDate(host)`; host local currency:
     `STTM_CORE_BRANCH.BRANCH_LCY`.
-  - Return an override as `new Message(code, Object[] params)` with **type `Message.WARNING` ("O")**. Type `E` makes
-    `PMMessageService.scanError` roll the transaction back (`Failed to Save the Record`), so the payment never
-    reaches the BO queue (lesson L17). OBPM substitutes `$1`, `$2` ... in order and stops at the first `$n` missing
-    from the text: number message parameters without gaps.
-  - **Override flow, seen working on a book transfer:**
-    1. The first Save calls the hook, and the screen shows the override text (type `O`).
-    2. When the user accepts, OBPM saves again and calls the hook **a second time** for the same payment. It
-       logs the override (`Error Code to log in override <code>`) and moves the payment to the BO queue with
-       `PA-TXP-083 Payment moved to business override queue` (queue code `BO`).
-
-    The hook must therefore be **idempotent per transaction reference**: MERGE its rows on the reference, and exclude
-    that reference when summing earlier usage.
+  - Return each business-override reason as `new Message(code, Object[] params)` with **type
+    `Message.INFORMATION` (`"I"`)**. The payment is then saved and moved to the BO queue in one pass
+    (`PA-TXP-083 Payment moved to business override queue`, queue `BO`), with no Accept prompt, and an authoriser
+    decides there (lessons L17, L19).
+    - Type `E` rolls the transaction back (`Failed to Save the Record`).
+    - Type `O` is a user override: the screen asks for Accept, then the accept pass fails with
+      `isOvdAccepted>>> false` and `ST-COM036 Response is empty`.
+  - OBPM substitutes `$1`, `$2` ... in order and stops at the first `$n` missing from the text, so number message
+    parameters without gaps.
+  - The hook can be called more than once for the same payment (for example on a re-save). Keep it **idempotent per
+    transaction reference**: MERGE its rows on the reference, and exclude that reference when summing earlier usage.
 - **`BO_EXT_VALIDATION`** - `IExtBOValdiationHandler.doValidateExtBuisnessOveride(Request)`: called only for
   incoming SWIFT (`XBorderOutSwiftService`); the request has DCN, branch, transfer type and institution fields but
   **no customer or amount**. Response: execution status S/F, validation status A/R/O, error code/desc.
