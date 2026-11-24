@@ -21,6 +21,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L11 | OBPM: a LOV lists nothing (bad table/column) or only `ALL` / the default value | LOV query guessed instead of read from OBPM; FCJ searches the LOV with the field's current value |
 | L12 | Screen title / menu shows `<Fid>_Desc`, `<Fid>_Main_Menu` | `LBL_<FID>_*` labels missing when ODT generated `SMTB_FUNCTION_DESCRIPTION` |
 | L13 | LOV window shows `No Records Found for the Specified Criteria` although the table has rows for the bind values | Description column is a LOV search field: `LIKE '%'` drops rows whose description is NULL |
+| L14 | OBPM: Authorize / Delete give `ST-COM036 Response is empty`; server log `PMRequestParser-->some values are null --> 19~21`, `ArrayIndexOutOfBoundsException` in `getActualFieldValues` | A block field with no data source column (DESC field) in a Java-functions screen |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -201,6 +202,21 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Prevention:** `gen_radxml.py` now makes only the first column a search field unless the spec sets
   `REDN_FLD_FLAG`. `check_radxml.py` warns about a searchable DESC/NAME column on LOVs of a function created in the
   current (non-KERNEL) release (proven: 5 warnings on the deployed radxml, none on the fixed one).
+
+## L14 - OBPM: Authorize / Delete fail with ST-COM036 (field count mismatch)
+- **Seen:** new OBPM 14.7 maintenance (CUSTOM, Java functions), 2026-11-23: New and Modify worked; Authorize and
+  Delete showed `ST-COM036 Response is empty`.
+- **Log:** `PMRequestParser-->some values are null --> 19~21`, then `java.lang.ArrayIndexOutOfBoundsException: 19 at
+  PMRequestParser.getActualFieldValues`. The request's `<FN>` lists 21 block fields; the record has 19 values.
+- **Cause:** two display-only DESC fields (customer name, service model description) had no column. New / Modify send
+  the screen's values, but Authorize / Delete send the queried record, which has no values for non-database fields,
+  so the OBPM parser runs out of values.
+- **Fix:** store every block field in a column, as OBPM's own screens do (PMDCSMLK keeps `CUSTOMER_NAME` and
+  `CUSTOMER_SERVICE_MODEL_DESC` in its table and fills them from the LOV). ALTER the table, map the fields (DBT/DBC,
+  read only), regenerate (new DTO/entity), redeploy. Alternative: remove the fields.
+- **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` reports an ERROR for a field without a data source
+  column in an OBPM Java-functions radxml (ELCM_FUNCTION = Y). Proven on the deployed radxml (2 errors) and the
+  fixed one (none). Reference 30 section 4.1 says to store descriptions.
 
 ---
 

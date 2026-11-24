@@ -134,6 +134,9 @@ user chooses. Copy the pattern of a similar shipped screen (for a customer-keyed
 - **Raising an error:** `profile.addMessage(new Message(code))` or `new Message(code, Object[] params)`, then
   `return false`. The kernel class keeps its `profile` private, so the Custom class stores its own. Check
   `profile.getAction()` (`NEW`, `MODIFY`, `DELETE`, `AUTH`, `CLOSE`, `REOPEN`, `EXECUTEQUERY`).
+- **Every block field is a column (lesson L14):** no DESC / display-only fields in a Java-functions screen. Store
+  descriptions (customer name, model description) in the table and fill them from the LOV return, as PMDCSMLK
+  does; otherwise Authorize / Delete fail in `PMRequestParser` with ST-COM036.
 - **Host on New (`POPULATE_HOST`, lesson L10):** LOV binds read only screen fields and the front end has no
   host global, so a host-keyed screen fills the host when New is clicked. Release JS `fnPostNew_<REL>` sets
   `gAction = "POPULATE_HOST"`, then `appendData()`, `buildUBSXml()`, `fnPost(...)`, `fnProcessResponse()` and on

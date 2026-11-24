@@ -221,6 +221,16 @@ if module in ('PM', 'PX'):
         warns.append(f'OBPM module {module}: ELCM_FUNCTION is not Y - ODT disables "Java Classes" on Generate. '
                      'For a Java back end tick "Java functions" in the screen Preferences (spec preferences '
                      'ELCM_FUNCTION = Y, MODULE_GROUP_ID = FCPMTS); lesson L9')
+    # lesson L14: in an OBPM Java-functions screen every block field must be a data source column. A DESC /
+    # non-database field is missing from a queried record, so AUTH / DELETE send fewer values than field names and
+    # PMRequestParser.getActualFieldValues fails (ArrayIndexOutOfBoundsException, ST-COM036).
+    if 'Y' in [e.text for e in cons.iter('ELCM_FUNCTION')]:
+        for bn, flds in bfields.items():
+            for fn, f in flds.items():
+                if f.findtext('ITEM_TYPE') in ('DESC', 'CONTROL') or not f.findtext('DBC'):
+                    errs.append(f'{bn}.{fn}: OBPM Java function - field has no data source column '
+                                f'(item type {f.findtext("ITEM_TYPE") or "?"}); Authorize/Delete will fail with '
+                                'ST-COM036. Store it in a column (as PMDCSMLK stores its descriptions); lesson L14')
     # lesson L10: a LOV bound to a read-only host field returns nothing until the host is filled. OBPM screens fill
     # it on New with action POPULATE_HOST (release JS fnPostNew_<REL> + <Name>Custom.preCheckMandatory).
     for bn, flds in bfields.items():
