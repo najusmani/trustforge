@@ -17,6 +17,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L6 | `PLS-00103: Encountered the symbol "<NAME>" when expecting one of the following: begin end function pragma procedure` compiling a package body | A package-level declaration placed after a procedure/function body |
 | L8 | Extra entries added by a CUSTOM hook are logged as added but missing from the final accounting hand-off (teller/ATM) | Kernel writes later entries at fixed hand-off positions and overwrites them |
 | L9 | OBPM: the **Java Classes** check box on Generate is disabled (greyed out) | "Java functions" not ticked in the screen's Preferences (`ELCM_FUNCTION` not `Y` in the radxml) |
+| L10 | OBPM: a LOV on a new screen opens but lists nothing (no error) | LOV bound to the read-only HOST_CODE field, which is empty on New; host not filled with `POPULATE_HOST` |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -141,6 +142,24 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` warns for an OBPM module (PM/PX) radxml whose
   `ELCM_FUNCTION` is not `Y` (proven: fires on the radxml first loaded, silent on the ODT-saved one). Reference 30
   sections 4 and 4.1 and the odt-radxml skill name the tag.
+
+## L10 - OBPM: host-bound LOV returns nothing on New
+- **Seen:** new OBPM 14.7 maintenance (CUSTOM, Java functions), 2026-11-23, after deployment.
+- **Symptom:** the customer and customer-service-model LOVs open but show no rows; no error.
+- **Cause:** their queries filter `HOST_CODE = ?` with the bind on the screen's read-only HOSTCODE field. A LOV bind
+  takes its value only from a screen field (`lovInfoFlds` in `<FID>_SYS.js`); the front end has no host-code global
+  (only `mainWin.CurrentBranch`). The field was filled only on Save, so the LOV ran with a null host.
+- **Fix (OBPM's own pattern, e.g. PBDOTONL, DirectDebitOut, PositivePayMaster):**
+  - release JS `fnPostNew_CUSTOM` sends action `POPULATE_HOST` and loads the reply:
+    `appendData(); fcjRequestDOM = buildUBSXml(); fcjResponseDOM = fnPost(fcjRequestDOM, servletURL, functionId);`
+    then on `fnProcessResponse()` SUCCESS:
+    `setDataXML(getXMLString(fnGetDataXMLFromFCJXML(fcjResponseDOM, 1))); showData();`, then restore `gAction`.
+  - `<Name>Custom.preCheckMandatory`: `if ("POPULATE_HOST".equals(profile.getAction())) { dto.setHostcode(profile.getHostCode()); return true; }`.
+    The generated `<Name>CustomSys` neither checks mandatory fields nor saves for this action.
+  - Deploy `<FID>_CUSTOM.js` next to `<FID>_SYS.js`; the launcher loads `Script/JS/<FID>_CUSTOM.js`.
+- **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` warns when a field's LOV binds a read-only
+  `HOST_CODE` field (it cannot see the JS, so it stays as a reminder). Reference 30 section 4.1 describes the
+  pattern.
 
 ---
 

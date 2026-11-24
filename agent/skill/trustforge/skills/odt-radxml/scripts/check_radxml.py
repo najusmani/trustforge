@@ -209,6 +209,18 @@ if module in ('PM', 'PX'):
         warns.append(f'OBPM module {module}: ELCM_FUNCTION is not Y - ODT disables "Java Classes" on Generate. '
                      'For a Java back end tick "Java functions" in the screen Preferences (spec preferences '
                      'ELCM_FUNCTION = Y, MODULE_GROUP_ID = FCPMTS); lesson L9')
+    # lesson L10: a LOV bound to a read-only host field returns nothing until the host is filled. OBPM screens fill
+    # it on New with action POPULATE_HOST (release JS fnPostNew_<REL> + <Name>Custom.preCheckMandatory).
+    for bn, flds in bfields.items():
+        host_flds = {fn for fn, f in flds.items()
+                     if (f.findtext('DBC') or '').upper() == 'HOST_CODE' and f.findtext('READ_ONLY') == 'Y'}
+        for fn, f in flds.items():
+            for bv in f.findall('RAD_BIND_VARS'):
+                if (bv.findtext('BIND_VAR_NAME') or bv.get('ID') or '') in host_flds:
+                    warns.append(f'{bn}.{fn}: LOV {f.findtext("LOV_NAME")} binds read-only host field '
+                                 f'{bv.findtext("BIND_VAR_NAME") or bv.get("ID")}: it is empty on New, so the LOV '
+                                 'returns nothing unless the host is filled with POPULATE_HOST (release JS '
+                                 'fnPostNew + Custom.preCheckMandatory); lesson L10')
     obpm_tables = (
         (r'\bCYTMS?_CCY_DEFN\b', 'CYTM_CCY_DEFN_MASTER (OBPM currency table)'),
         (r'\bSTTMS?_CUSTOMER\b', 'STTM_CORE_CUSTOMER (OBPM customer table; category = customer service model)'),
