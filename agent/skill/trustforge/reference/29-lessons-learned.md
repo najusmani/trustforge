@@ -23,6 +23,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L13 | LOV window shows `No Records Found for the Specified Criteria` although the table has rows for the bind values | Description column is a LOV search field: `LIKE '%'` drops rows whose description is NULL |
 | L14 | OBPM: Authorize / Delete give `ST-COM036 Response is empty`; server log `PMRequestParser-->some values are null --> 19~21`, `ArrayIndexOutOfBoundsException` in `getActualFieldValues` | A block field with no data source column (DESC field) in a Java-functions screen |
 | L15 | OBPM: a Java processing hook does nothing (payment not stopped, no error); log `LOOKUP_KEY -- <KEY>` then `Class Name not found return NULL` | Hook class not registered in `PMTM_EXTENSION_CLASSES` (key exists, CLASS_NAME empty); hook logging with `java.util.logging` never shows in the OBPM debug |
+| L16 | OBPM BO_VALIDATION hook runs but checks nothing; its debug shows amount / currency `null` for a book transfer | Book transfer fills the pain fields (`Instdamt`, `Instdamtccy`, `Eqvtamt`), not `getxfrAmt` / `getTxfrCcy` / `getLcyAmt` / `getBookDate` |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -232,6 +233,22 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   `com.ofss.pmts.logger.Logger.logDebug("<Class>-->" + msg, DebugLevels.INFO)`, as Oracle's classes do.
 - **Prevention:** deployment steps put registration and its check SELECT right after the EAR deploy; reference 30
   section 5 names the log lines and the logger. Not mechanically checkable from the radxml or zip.
+
+## L16 - OBPM: business-override hook sees no amount on book transfers
+- **Seen:** `BO_VALIDATION` hook (customer payment limits), OBPM 14.7, 2026-11-23, book transfer (PBDOTONL): hook
+  loaded and called (`Custom class initialised successfully`), but its debug showed `... INTERNALTF null null lcy
+  null` and the 500 payment was not checked.
+- **Cause:** `BookTransferTxnDetailAssembler.populateSanctionsPainDto` (read with `javap -c`) sets
+  `Instdamt` = transfer amount, `Instdamtccy` and `Ccyoftrf` = transfer currency, `Eqvtamt` / `Eqvtamtccy` = debit
+  amount / debit account currency, plus txn ref, customer, source, network and host. It does not set `xfrAmt`,
+  `TxfrCcy`, `LcyAmt`, `lCcy` or `BookDate`.
+- **Fix:** read `getxfrAmt() ?: getInstdamt()`, `getTxfrCcy() ?: getInstdamtccy() ?: getCcyoftrf()`; booking date from
+  `HostCodeService.getHostDate(host)` (host business date, not the server date). LCY amount: the transfer amount
+  when its currency is the host's local currency (`STTM_CORE_BRANCH.BRANCH_LCY` for the host), else the debit amount
+  when the debit currency is local; otherwise fail safe.
+- **Prevention:** reference 30 section 5.1 lists, per flow, which `CommonSchemaPainDto` fields are filled. Before
+  using a DTO field in a hook, check the flow's assembler setters with `javap -c`. Log every input the hook uses, so
+  a null shows up in the first test. Not mechanically checkable.
 
 ---
 

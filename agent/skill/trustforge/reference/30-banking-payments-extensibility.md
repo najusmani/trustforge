@@ -218,6 +218,12 @@ Interfaces and parameters vary by patch set: the workbook names the version each
     queue (cross-border outgoing: status E, queue BO, first message as error code).
   - `CommonSchemaPainDto` has `getTxnrefno` (BigDecimal), `getHostCode`, `getCustomerNo`, `getSourceCode`,
     `getNetworkCode`, `getTxfrCcy`, `getxfrAmt`, `getLcyAmt`, `getBookDate`, `getTxnBranch` - no customer category.
+  - **Which fields are filled depends on the flow (lesson L16).** Book transfer (`BookTransferTxnDetailAssembler.
+    populateSanctionsPainDto`) fills `Txnrefno, CustomerNo, SourceCode, NetworkCode, HostCode`, `Instdamt` (transfer
+    amount), `Instdamtccy` / `Ccyoftrf` (transfer currency), `Eqvtamt` / `Eqvtamtccy` (debit amount / currency), and
+    leaves `xfrAmt, TxfrCcy, LcyAmt, lCcy, BookDate` null. Read each flow's assembler with `javap -c` before relying
+    on a field; host business date: `HostCodeService.getHostDate(host)`; host local currency:
+    `STTM_CORE_BRANCH.BRANCH_LCY`.
   - Return an override as `new Message(code, Object[] params)` with type `Message.ERROR`.
 - **`BO_EXT_VALIDATION`** - `IExtBOValdiationHandler.doValidateExtBuisnessOveride(Request)`: called only for
   incoming SWIFT (`XBorderOutSwiftService`); the request has DCN, branch, transfer type and institution fields but
