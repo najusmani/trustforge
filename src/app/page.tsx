@@ -345,9 +345,11 @@ export default async function Home() {
             <div className={s.split}>
               <span className={s.eyebrow}>Built with TrustForge</span>
               <h2 id="proof-h" className={`${s.serif} ${s.h2}`}>
-                Real jobs, on a real <em className={s.gold}>FLEXCUBE.</em>
+                Real jobs, on real <em className={s.gold}>Oracle banking systems.</em>
               </h2>
             </div>
+            {/* Live jobs: add a card when the user confirms a job is live (D:\RADWorld\CLAUDE.md). Function ID and one
+                line only; never bank names or data. */}
             <div className={s.cases}>
               <article className={s.case}>
                 <span className={`${s.caps} ${s.caseId}`}>STDCURSK</span>
@@ -356,6 +358,10 @@ export default async function Home() {
               <article className={s.case}>
                 <span className={`${s.caps} ${s.caseId}`}>IFDATMMN</span>
                 <h3 className={`${s.serif} ${s.caseT}`}>Sixth charge on ARC maintenance</h3>
+              </article>
+              <article className={s.case}>
+                <span className={`${s.caps} ${s.caseId}`}>PMDCLMTS</span>
+                <h3 className={`${s.serif} ${s.caseT}`}>Customer payment limits for Oracle Banking Payments</h3>
               </article>
             </div>
           </div>
