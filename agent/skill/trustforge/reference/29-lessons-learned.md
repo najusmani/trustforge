@@ -22,6 +22,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L12 | Screen title / menu shows `<Fid>_Desc`, `<Fid>_Main_Menu` | `LBL_<FID>_*` labels missing when ODT generated `SMTB_FUNCTION_DESCRIPTION` |
 | L13 | LOV window shows `No Records Found for the Specified Criteria` although the table has rows for the bind values | Description column is a LOV search field: `LIKE '%'` drops rows whose description is NULL |
 | L14 | OBPM: Authorize / Delete give `ST-COM036 Response is empty`; server log `PMRequestParser-->some values are null --> 19~21`, `ArrayIndexOutOfBoundsException` in `getActualFieldValues` | A block field with no data source column (DESC field) in a Java-functions screen |
+| L15 | OBPM: a Java processing hook does nothing (payment not stopped, no error); log `LOOKUP_KEY -- <KEY>` then `Class Name not found return NULL` | Hook class not registered in `PMTM_EXTENSION_CLASSES` (key exists, CLASS_NAME empty); hook logging with `java.util.logging` never shows in the OBPM debug |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -217,6 +218,20 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` reports an ERROR for a field without a data source
   column in an OBPM Java-functions radxml (ELCM_FUNCTION = Y). Proven on the deployed radxml (2 errors) and the
   fixed one (none). Reference 30 section 4.1 says to store descriptions.
+
+## L15 - OBPM: processing hook never runs
+- **Seen:** customer payment limit hook (`BO_VALIDATION`), OBPM 14.7, 2026-11-23: a 5,000 book transfer against a
+  100 per-transaction limit was saved and authorised; no override, no error.
+- **Log (user debug):** `AbstractBookTransferProcessor--> LOOKUP_KEY -- BO_VALIDATION`, then `Class Name not found
+  return NULL`, `No Lookup Handler Class Found.` The key exists but `PMTM_EXTENSION_CLASSES.CLASS_NAME` is empty, so
+  the kernel default runs. (`No record found # {Extension.findByPk ...}` means the key itself is missing.)
+- **Cause:** the registration script was not run after deploying the jar. Also, the hook classes logged with
+  `java.util.logging`, which never appears in OBPM's per-user debug file, so there was no sign they were skipped.
+- **Fix:** run the registration (`UPDATE pmtm_extension_classes SET class_name = '<class>' WHERE key = '<KEY>'`),
+  check with `SELECT key, class_name FROM pmtm_extension_classes WHERE key IN (...)`. Log from hooks with
+  `com.ofss.pmts.logger.Logger.logDebug("<Class>-->" + msg, DebugLevels.INFO)`, as Oracle's classes do.
+- **Prevention:** deployment steps put registration and its check SELECT right after the EAR deploy; reference 30
+  section 5 names the log lines and the logger. Not mechanically checkable from the radxml or zip.
 
 ---
 

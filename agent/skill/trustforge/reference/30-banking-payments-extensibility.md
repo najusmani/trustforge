@@ -204,6 +204,11 @@ Interfaces and parameters vary by patch set: the workbook names the version each
 14.3.0.4.3. Confirm against the user's OBPM jars before writing a class.
 
 ### 5.1 Hook details read from the OBPM 14.7 jars
+- **Registering and checking a hook (lesson L15):** after deploying the jar, set `CLASS_NAME` for the key and check it
+  with a SELECT. In the user's debug, `LOOKUP_KEY -- <KEY>` followed by `Class Name not found return NULL` means the
+  key has no class (kernel default runs); `No record found # {Extension.findByPk ...}` means the key is missing.
+- **Logging from a hook:** use `com.ofss.pmts.logger.Logger.logDebug("<Class>-->" + msg, DebugLevels.INFO)`; plain
+  `java.util.logging` output does not reach OBPM's debug files.
 - **`BO_VALIDATION`** - `com.ofss.pmts.xml.fcubs.IBOValidationHandler` (PMApps.jar), seven methods to implement:
   `List<Message> validateBusinessRules(CommonSchemaPainDto)` plus overloads for `AchCreditInTxnDriver`,
   `AchCreditOutTxnDriver`, `AchDebitOutTxnDriver` and `validateBusinessRulesFcust(GenericWiresOutDriverDto |
