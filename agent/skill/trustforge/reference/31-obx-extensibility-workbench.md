@@ -13,8 +13,8 @@ only in screenshots in the guide; this file says so where that applies.
   `cmc-datasegment-services` (Common Core). For FCUBS / OBPM host screens, hooks and `PMTM_EXTENSION_CLASSES`
   hooks, stay with ODT (files 01-30).
 - The guide assumes the **base product (kernel) is already set up**.
-- Related Oracle documents: **OBX User Manual** (how to generate artifacts) and **OBX Release Notes**. The
-  installation guide does not describe the generation commands; they are in the User Manual.
+- Related Oracle documents: **OBX User Manual**, condensed in **file 32** (generation commands, deployment, base
+  component changes, branch servicing tables), and **OBX Release Notes**.
 
 ## 2. Prerequisites
 - **Machine:** Windows 10 64-bit Pro, Enterprise or Education (build 15063 or later); 8-16 GB RAM. The introduction
@@ -53,7 +53,9 @@ Do this before generating the first artifact:
 3. Create `extension_home\runtime`.
 4. From the **gradle** folder in the OBX zip, go into its `lib` folder and copy **`extra_jars`** (the compile-time
    dependencies for services) into `extension_home\runtime`.
-5. To run artifacts locally you need the **component server**: get `component-server.zip` from the
+5. The user manual (file 32 section 2) adds `extension_home\component-server` with the folders `common` and
+   `components` from the base product's `app-shell.war`, and the database checks (`PRODUCT_EXTENDED_LEDGER`, the OBX
+   application in SMS). To run artifacts locally you need the **component server**: get `component-server.zip` from the
    "shared location" (provided with the product delivery; the guide does not give a path) and extract it into
    `extension_home`.
 6. The result should be `extension_home` containing `lib`, `runtime` and the extracted component-server folder.
