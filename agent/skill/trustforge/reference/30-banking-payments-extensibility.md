@@ -224,7 +224,10 @@ Interfaces and parameters vary by patch set: the workbook names the version each
     leaves `xfrAmt, TxfrCcy, LcyAmt, lCcy, BookDate` null. Read each flow's assembler with `javap -c` before relying
     on a field; host business date: `HostCodeService.getHostDate(host)`; host local currency:
     `STTM_CORE_BRANCH.BRANCH_LCY`.
-  - Return an override as `new Message(code, Object[] params)` with type `Message.ERROR`.
+  - Return an override as `new Message(code, Object[] params)` with **type `Message.WARNING` ("O")**. Type `E` makes
+    `PMMessageService.scanError` roll the transaction back (`Failed to Save the Record`), so the payment never
+    reaches the BO queue (lesson L17). OBPM substitutes `$1`, `$2` ... in order and stops at the first `$n` missing
+    from the text: number message parameters without gaps.
 - **`BO_EXT_VALIDATION`** - `IExtBOValdiationHandler.doValidateExtBuisnessOveride(Request)`: called only for
   incoming SWIFT (`XBorderOutSwiftService`); the request has DCN, branch, transfer type and institution fields but
   **no customer or amount**. Response: execution status S/F, validation status A/R/O, error code/desc.

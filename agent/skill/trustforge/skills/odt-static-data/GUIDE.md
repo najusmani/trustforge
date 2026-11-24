@@ -41,6 +41,7 @@ Menu (SMTB_MENU, SMTB_FUNCTION_DESCRIPTION, SMTB_ROLE_DETAIL, SMTB_FCC_FCJ_MAPPI
   `ERR_CODE, LANGUAGE, MESSAGE, TYPE, CONFIRMATION_REQD, FUNCTION_ID, MAX_SUB_PARAM, MODIFIABLE, BATCH_TYPE,
   DERIVED_MSG, OVD_CLASS, PARAM_TYPES, PARAMS_TO_MATCH, PARAMS_TO_COMPARE, DIRECTION_OF_COMPARISION`.
   - TYPE `E` = error (stops the save), `O` = override, `I` = information. MAX_SUB_PARAM = number of `$1`..`$n` used.
+  - Number `$1`..`$n` without gaps in each text: OBPM stops substituting at the first missing number (lesson L17).
   - Write a re-runnable `MERGE INTO ertb_msgs ... ON (err_code, language)`; insert `CONFIRMATION_REQD 'N'`,
     `MODIFIABLE 'N'`, `DERIVED_MSG 'N'`, the function id, NULL for the rest; end with a SELECT of the rows and a
     commented DELETE rollback.

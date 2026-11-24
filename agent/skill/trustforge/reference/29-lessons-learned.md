@@ -24,6 +24,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L14 | OBPM: Authorize / Delete give `ST-COM036 Response is empty`; server log `PMRequestParser-->some values are null --> 19~21`, `ArrayIndexOutOfBoundsException` in `getActualFieldValues` | A block field with no data source column (DESC field) in a Java-functions screen |
 | L15 | OBPM: a Java processing hook does nothing (payment not stopped, no error); log `LOOKUP_KEY -- <KEY>` then `Class Name not found return NULL` | Hook class not registered in `PMTM_EXTENSION_CLASSES` (key exists, CLASS_NAME empty); hook logging with `java.util.logging` never shows in the OBPM debug |
 | L16 | OBPM BO_VALIDATION hook runs but checks nothing; its debug shows amount / currency `null` for a book transfer | Book transfer fills the pain fields (`Instdamt`, `Instdamtccy`, `Eqvtamt`), not `getxfrAmt` / `getTxfrCcy` / `getLcyAmt` / `getBookDate` |
+| L17 | OBPM: a business-override hook shows its message but `Failed to Save the Record` (payment not in the BO queue); message text keeps `$4` | Message type `E` rolls the transaction back (overrides must be `O`); OBPM stops substituting at the first `$n` missing from the text |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -249,6 +250,22 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Prevention:** reference 30 section 5.1 lists, per flow, which `CommonSchemaPainDto` fields are filled. Before
   using a DTO field in a hook, check the flow's assembler setters with `javap -c`. Log every input the hook uses, so
   a null shows up in the first test. Not mechanically checkable.
+
+## L17 - OBPM: override message fails the save, and `$n` left in the text
+- **Seen:** `BO_VALIDATION` limit hook, OBPM 14.7, 2026-11-23, book transfer of 400 against a 100 limit. Screen:
+  `Payment amount $4 LCY exceeds the customer per-transaction limit 100 LCY  PM-CLMT-101`, `Failed to Save the Record`.
+- **Log:** `message.getType():E`, `Final Error Type = E` (although `populateOverrideQueue` had started);
+  `Substitutions Content:: [100, LCY, 0, 400]`, `Substitution length==>4`, yet `$4` stayed.
+- **Causes:**
+  - `PMMessageService.scanError` rolls the whole transaction back for any message of type `E`. The hook built
+    `new Message(code, params)` with `setType(Message.ERROR)`.
+  - `PMMessageService.replaceSubstitutions` turns `$1`, `$2`, `$3` ... into `{0}`, `{1}` ... in order and **stops at
+    the first `$n` not found in the text**. The message used `$1 $2 $4` (no `$3`), so `$4` was never replaced.
+- **Fix:** overrides from processing hooks use `setType(Message.WARNING)` (= `"O"`). The payment then goes to the
+  business-override queue and the save succeeds. Number message parameters from `$1` without gaps; order the
+  hook's parameters so every message uses a prefix (`$1..$k`).
+- **Prevention:** reference 30 section 5.1 and the odt-static-data message rules. Before writing a message, check that
+  its `$n` run without gaps. Not checked by a script (messages are SQL text).
 
 ---
 
