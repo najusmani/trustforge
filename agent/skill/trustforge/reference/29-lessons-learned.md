@@ -25,6 +25,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L15 | OBPM: a Java processing hook does nothing (payment not stopped, no error); log `LOOKUP_KEY -- <KEY>` then `Class Name not found return NULL` | Hook class not registered in `PMTM_EXTENSION_CLASSES` (key exists, CLASS_NAME empty); hook logging with `java.util.logging` never shows in the OBPM debug |
 | L16 | OBPM BO_VALIDATION hook runs but checks nothing; its debug shows amount / currency `null` for a book transfer | Book transfer fills the pain fields (`Instdamt`, `Instdamtccy`, `Eqvtamt`), not `getxfrAmt` / `getTxfrCcy` / `getLcyAmt` / `getBookDate` |
 | L17 | OBPM: a business-override hook shows its message but `Failed to Save the Record` (payment not in the BO queue); message text keeps `$4` | Message type `E` rolls the transaction back (overrides must be `O`); OBPM stops substituting at the first `$n` missing from the text |
+| L18 | OBPM: rows written by a Java hook stay after the payment is rolled back (`Failed to Save`) | Hook used a JNDI data-source connection, which is not in the payment's transaction |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -266,6 +267,18 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   hook's parameters so every message uses a prefix (`$1..$k`).
 - **Prevention:** reference 30 section 5.1 and the odt-static-data message rules. Before writing a message, check that
   its `$n` run without gaps. Not checked by a script (messages are SQL text).
+
+## L18 - OBPM: hook writes survive a rolled-back payment
+- **Seen:** `BO_VALIDATION` limit hook, OBPM 14.7, 2026-11-23: the payment failed to save (rolled back), but the usage
+  row the hook wrote (`PMTB_CUST_PMT_LIMIT_USAGE`, status A) was still there, so it would count against the limits.
+- **Cause:** the hook took its connection from the data source by JNDI (`jdbc/fcjdevDS`). OBPM runs the payment on the
+  thread's EntityManager (`com.ofss.pmts.common.ThreadLocalEntityManager`: begin / commit / rollback), so a separate
+  data-source connection is not in that transaction and commits on its own.
+- **Fix:** use the payment's connection,
+  `ThreadLocalEntityManager.getInstance().getEntityManager().unwrap(java.sql.Connection.class)`, as Oracle's own
+  `EmsFileHandoffHelper` does; never close or commit it. Keep JNDI only as a logged fallback. Release the stray rows.
+- **Prevention:** reference 30 section 4.1 ("Database access from Java") now says this. Test a rolled-back payment and
+  check the hook's table. Not mechanically checkable.
 
 ---
 
