@@ -153,11 +153,15 @@ user chooses. Copy the pattern of a similar shipped screen (for a customer-keyed
   Source codes `PMTM_SOURCE` (SOURCE_CODE, DESCRIPTION, HOST_CODE); networks `PMTM_NETWORK` (NETWORK_CODE,
   NETWORK_DESCRIPTION, HOST_CODE). Read any other LOV table from the `@Table`/`@Column` names in PMEntities.jar, never
   guess (lesson L11).
-- **Database access from Java (lesson L18):** use the payment's own connection,
-  `ThreadLocalEntityManager.getInstance().getEntityManager().unwrap(java.sql.Connection.class)`
-  (`com.ofss.pmts.common`, as Oracle's `EmsFileHandoffHelper` does), and never close or commit it. A connection from
-  the data source by JNDI (`jdbc/fcjdevDS`) is NOT in the payment's transaction: its writes stay when the payment
-  rolls back. JDBC cannot read a PL/SQL BOOLEAN: give called functions a VARCHAR2 'Y'/'N' wrapper.
+- **Database access from Java (lessons L18, L20):** use Oracle's pattern from `EmsFileHandoffHelper.handOff()`:
+  - **JTA EntityManager** (`ThreadLocalEntityManager.getInstance().getEntityManager()` has the property
+    `javax.persistence.jtaDataSource`): `ConnectionService.getConnection(ConnectionService.getDataSourceName())`
+    (`com.ofss.pmts.jdbc.dispatcher`), closed with `ConnectionService.closeConnection`;
+  - **resource-local:** `em.unwrap(java.sql.Connection.class)`, never closed by the hook.
+
+  Log `con.getAutoCommit()`: `true` means the work commits at once, outside the payment's transaction. Do not guess a
+  JNDI name (`jdbc/fcjdevDS` committed on its own). JDBC cannot read a PL/SQL BOOLEAN: give called functions a
+  VARCHAR2 'Y'/'N' wrapper.
 - **Finding these facts:** the application EAR holds the jars (`PMApps`, `PMKernel`, `PMCommon`, `PMDto`,
   `PMEntities`, `PMKernelDao`). `javap -p` gives signatures; `javap -c` on the caller shows how a hook's result is used.
 

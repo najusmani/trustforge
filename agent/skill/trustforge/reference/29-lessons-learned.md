@@ -27,6 +27,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L17 | OBPM: a business-override hook shows its message but `Failed to Save the Record` (payment not in the BO queue); message text keeps `$4` | Message type `E` rolls the transaction back (use `I`, see L19); OBPM stops substituting at the first `$n` missing from the text |
 | L18 | OBPM: rows written by a Java hook stay after the payment is rolled back (`Failed to Save`) | Hook used a JNDI data-source connection, which is not in the payment's transaction |
 | L19 | OBPM: user is asked to accept the hook's message; after Accept the screen shows `ST-COM036 Response is empty`; log `Finally isOvdAccepted>>> false`, `Throwing FailureException with ErrorType O` | Hook returned type `O` (user override). A business-override reason must be type `I` |
+| L20 | OBPM: a hook's rows still survive a rolled-back payment after switching to `EntityManager.unwrap(Connection.class)` | The unwrapped connection can be in auto-commit mode; with a JTA EntityManager, Oracle uses `ConnectionService.getConnection(ConnectionService.getDataSourceName())` |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -275,9 +276,8 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Cause:** the hook took its connection from the data source by JNDI (`jdbc/fcjdevDS`). OBPM runs the payment on the
   thread's EntityManager (`com.ofss.pmts.common.ThreadLocalEntityManager`: begin / commit / rollback), so a separate
   data-source connection is not in that transaction and commits on its own.
-- **Fix:** use the payment's connection,
-  `ThreadLocalEntityManager.getInstance().getEntityManager().unwrap(java.sql.Connection.class)`, as Oracle's own
-  `EmsFileHandoffHelper` does; never close or commit it. Keep JNDI only as a logged fallback. Release the stray rows.
+- **Fix:** see L20. `unwrap` alone was not enough, because the unwrapped connection can be in auto-commit mode.
+  Release the stray rows.
 - **Prevention:** reference 30 section 4.1 ("Database access from Java") now says this. Test a rolled-back payment and
   check the hook's table. Not mechanically checkable.
 
@@ -298,6 +298,27 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   - `E`: rolls back;
   - `O`: asks the user;
   - `I`: continues, and BO_VALIDATION then moves the payment to the BO queue.
+
+## L20 - OBPM: which connection is really inside the payment's transaction
+- **Seen:** same hook, 2026-11-23. After switching to `EntityManager.unwrap(Connection.class)`, the usage row of a
+  payment that failed and was not saved (ref ...4531000) was still active.
+- **Cause:** read in Oracle's `EmsFileHandoffHelper.handOff()` (`javap -c`):
+  - if the EntityManager has a `javax.persistence.jtaDataSource` property, it takes the connection from OBPM's
+    transactional data source, `ConnectionService.getConnection(ConnectionService.getDataSourceName())`
+    (`com.ofss.pmts.jdbc.dispatcher`);
+  - otherwise it unwraps the connection and switches `autoCommit` off if it is on.
+
+  An unwrapped connection in auto-commit mode commits each statement at once. A guessed JNDI name such as
+  `jdbc/fcjdevDS` may not be the transactional data source (persistence.xml also defines `..._GTXN` units).
+- **Fix:** follow Oracle's pattern:
+  - JTA EntityManager: `ConnectionService.getConnection(ConnectionService.getDataSourceName())`, closed with
+    `ConnectionService.closeConnection`;
+  - resource-local: unwrap, and do not close it.
+
+  Log `getAutoCommit()`: `false` means the hook's work joins the payment's transaction; `true` is a warning. To
+  clean up, release usage rows whose payment is not in the flow's transaction table (book transfer: `PBTB_TXN`).
+- **Prevention:** reference 30 section 4.1. Test one payment that fails to save, and check that the hook left no row.
+  Not mechanically checkable.
 
 ---
 
