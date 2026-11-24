@@ -201,9 +201,15 @@ for n, l in lovs.items():
     q = (l.findtext('LOV_QUERY') or '').upper()
     if ' ORDER BY ' in q:
         warns.append(f'LOV {n}: avoid ORDER BY in LOV queries')
-    for c in l.findall('RAD_LOV_DETAILS'):
+    for ci, c in enumerate(l.findall('RAD_LOV_DETAILS')):
         if not c.findtext('COL_HEADING'):
             warns.append(f'LOV {n}.{c.get("ID")}: column heading label missing')
+        # lesson L13: a search field on a description column filters LIKE '%', which drops rows whose value is NULL
+        col = (c.findtext('QUERY_COLS') or c.get('ID') or '').upper()
+        if (ci > 0 and origin == root.findtext('RELEASE_TYPE') != 'KERNEL' and c.findtext('REDN_FLD_FLAG') == 'Y'
+                and re.search(r'DESC|NAME', col)):
+            warns.append(f'LOV {n}.{col}: description column is a search field - the LOV searches it with LIKE \'%\' '
+                         'and drops rows where it is NULL (empty list); set REDN_FLD_FLAG N; lesson L13')
 
 # ---- OBPM (Oracle Banking Payments) screens: OBPM's own tables, not the FCUBS ones (reference 30, 4.1)
 module = (root.findtext('.//MODULE_ID') or '').upper()

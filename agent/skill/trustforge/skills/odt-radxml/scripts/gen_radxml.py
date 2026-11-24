@@ -181,9 +181,12 @@ class Gen:
         # LOVs
         for lv in spec.get('lovs', []):
             e = self.make('RAD_LOVS', {'LOV_STATUS': 'I', **upper(lv)}, lv['LOV_NAME'], rel)
-            for col in lv['columns']:
+            for ci, col in enumerate(lv['columns']):
+                # lesson L11: only the first (code) column is a search field by default. A search field on a nullable
+                # description column (LIKE '%') hides every row whose description is NULL.
                 det = self.make('RAD_LOV_DETAILS', {'DATATYPE': 'VARCHAR2', 'VISIBLE': 'Y', 'REDN_FLD_TYPE': 'TEXT',
-                                                    'REDN_FLD_FLAG': 'Y', 'IS_INDEXED': 'N', **col}, col['QUERY_COLS'])
+                                                    'REDN_FLD_FLAG': 'Y' if ci == 0 else 'N', 'IS_INDEXED': 'N', **col},
+                                col['QUERY_COLS'])
                 # LOV details sit before LOV_STATUS
                 idx = next((i for i, c in enumerate(e) if c.tag == 'LOV_STATUS'), len(e))
                 idx = max(idx, max((i + 1 for i, c in enumerate(e) if c.tag == 'RAD_LOV_DETAILS'), default=idx))

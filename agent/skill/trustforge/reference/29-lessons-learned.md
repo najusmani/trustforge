@@ -20,6 +20,7 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L10 | OBPM: a LOV on a new screen opens but lists nothing (no error) | LOV bound to the read-only HOST_CODE field, which is empty on New; host not filled with `POPULATE_HOST` |
 | L11 | OBPM: a LOV lists nothing (bad table/column) or only `ALL` / the default value | LOV query guessed instead of read from OBPM; FCJ searches the LOV with the field's current value |
 | L12 | Screen title / menu shows `<Fid>_Desc`, `<Fid>_Main_Menu` | `LBL_<FID>_*` labels missing when ODT generated `SMTB_FUNCTION_DESCRIPTION` |
+| L13 | LOV window shows `No Records Found for the Specified Criteria` although the table has rows for the bind values | Description column is a LOV search field: `LIKE '%'` drops rows whose description is NULL |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -187,6 +188,19 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
   only INSERTs: on an existing function it fails with ORA-00001 and changes nothing.
 - **Prevention:** `../skills/odt-customize/scripts/check_odt_zip.py` reports it (error for a new function, warning
   for an existing one). Maintain the menu labels before the first Generate.
+
+## L13 - LOV finds nothing because of a NULL description
+- **Seen:** new OBPM 14.7 maintenance, 2026-11-23: the source and network LOVs were empty while the tables had 17
+  and 9 open, authorised rows for the user's host. Confirmed: their descriptions are NULL.
+- **Symptom:** LOV window opens with `%` in every search box; Fetch gives `No Records Found for the Specified Criteria`.
+- **Cause:** every LOV column marked as a reduction (search) field gets a `LIKE '%'` condition. `NULL LIKE '%'` is not
+  true, so a nullable description column hides those rows. ODT and `gen_radxml.py` (before 0.6.8) made every column a
+  search field.
+- **Fix:** make only the code column a search field (`REDN_FLD_FLAG = N` on description / name columns), or select
+  `NVL(<desc>, ' ')` with the same alias. Quick test: clear `%` from the description box and Fetch.
+- **Prevention:** `gen_radxml.py` now makes only the first column a search field unless the spec sets
+  `REDN_FLD_FLAG`. `check_radxml.py` warns about a searchable DESC/NAME column on LOVs of a function created in the
+  current (non-KERNEL) release (proven: 5 warnings on the deployed radxml, none on the fixed one).
 
 ---
 
