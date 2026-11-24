@@ -18,6 +18,8 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 | L8 | Extra entries added by a CUSTOM hook are logged as added but missing from the final accounting hand-off (teller/ATM) | Kernel writes later entries at fixed hand-off positions and overwrites them |
 | L9 | OBPM: the **Java Classes** check box on Generate is disabled (greyed out) | "Java functions" not ticked in the screen's Preferences (`ELCM_FUNCTION` not `Y` in the radxml) |
 | L10 | OBPM: a LOV on a new screen opens but lists nothing (no error) | LOV bound to the read-only HOST_CODE field, which is empty on New; host not filled with `POPULATE_HOST` |
+| L11 | OBPM: a LOV lists nothing (bad table/column) or only `ALL` / the default value | LOV query guessed instead of read from OBPM; FCJ searches the LOV with the field's current value |
+| L12 | Screen title / menu shows `<Fid>_Desc`, `<Fid>_Main_Menu` | `LBL_<FID>_*` labels missing when ODT generated `SMTB_FUNCTION_DESCRIPTION` |
 | L7 | `PLS-00231: function '<NAME>' may not be used in SQL` with `ORA-00904: "<NAME>": invalid identifier` compiling a package body | A function declared only in the body (not the spec) called inside a SQL statement |
 
 ---
@@ -160,6 +162,31 @@ data, account numbers, environment URLs or credentials in a lesson: only ODT/FLE
 - **Prevention:** `../skills/odt-radxml/scripts/check_radxml.py` warns when a field's LOV binds a read-only
   `HOST_CODE` field (it cannot see the JS, so it stays as a reminder). Reference 30 section 4.1 describes the
   pattern.
+
+## L11 - OBPM: LOV lists nothing, or only the default value
+- **Seen:** new OBPM 14.7 maintenance, 2026-11-23, first test.
+- **Symptoms:** Source Code and Network Code LOVs empty; the Customer Service Model LOV showed only `ALL`.
+- **Causes:**
+  - the source / network queries used guessed objects (`PMTM_NETWORK_CODES`, `PMTM_SOURCE.SOURCE_DESC`). OBPM has
+    `PMTM_SOURCE (SOURCE_CODE, DESCRIPTION, HOST_CODE)` and `PMTM_NETWORK (NETWORK_CODE, NETWORK_DESCRIPTION,
+    HOST_CODE)`. A failing LOV query shows an empty list, not an error.
+  - FCJ sends the field's current value as the LOV search (`rednFldval` in `ExtUIUtil.js disp_lov`). A field
+    pre-filled with `ALL` lists only codes starting with ALL.
+- **Fix:** take every LOV table and column from the OBPM entities (`PMEntities.jar`, `@Table`/`@Column` names; reference
+  30 section 4.1 lists the common ones) and filter per `HOST_CODE`. For a pre-filled field, clear it before opening the
+  LOV, or leave it blank and default on save (the user's choice).
+- **Prevention:** `check_radxml.py` warns on the known wrong OBPM objects and on any LOV field with a default value.
+
+## L12 - Screen title and menu show label codes
+- **Seen:** new OBPM 14.7 maintenance (same applies to FCUBS), 2026-11-23.
+- **Symptom:** the window title shows `Pmdclmts_Desc`; the menu shows `Pmdclmts_Main_Menu` / `_Sub_Menu_1/2`.
+- **Cause:** ODT writes `SMTB_FUNCTION_DESCRIPTION` from the labels `LBL_<FID>_MAIN_MENU`, `_SUB_MENU_1`, `_SUB_MENU_2`
+  and `_DESC`. If they are not maintained before Generate, it writes the codes themselves as text.
+- **Fix:** update the texts (for OBPM, copy MAIN_MENU / SUB_MENU_1 from a sibling screen such as PMDCSMLK so the
+  function sits in the same menu), and maintain the labels (Fetch Missing Labels) before the next Generate. The INC
+  only INSERTs: on an existing function it fails with ORA-00001 and changes nothing.
+- **Prevention:** `../skills/odt-customize/scripts/check_odt_zip.py` reports it (error for a new function, warning
+  for an existing one). Maintain the menu labels before the first Generate.
 
 ---
 

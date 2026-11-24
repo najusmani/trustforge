@@ -189,6 +189,12 @@ for bn, b in blocks.items():
             warns.append(f'{bn}.{fn} is not in any visible field set (it will not be in the HTML)')
 
 # ---- LOVs
+# lesson L11: FCJ uses the field's current value as the LOV search (ExtUIUtil disp_lov rednFldval)
+for bn, flds in bfields.items():
+    for fn, f in flds.items():
+        if f.findtext('LOV_NAME') and f.findtext('DEFAULT_VALUE'):
+            warns.append(f'{bn}.{fn}: LOV field with default value {f.findtext("DEFAULT_VALUE")!r} - FCJ searches the LOV '
+                         'with it, so only matching codes are listed until the user clears the field; lesson L11')
 for n, l in lovs.items():
     if not n.startswith('LOV_'):
         warns.append(f'LOV {n} must start with LOV_')
@@ -225,12 +231,15 @@ if module in ('PM', 'PX'):
         (r'\bCYTMS?_CCY_DEFN\b', 'CYTM_CCY_DEFN_MASTER (OBPM currency table)'),
         (r'\bSTTMS?_CUSTOMER\b', 'STTM_CORE_CUSTOMER (OBPM customer table; category = customer service model)'),
         (r'\bSTTMS?_CUSTOMER_CAT\b', 'PMTM_CUST_SERVICE_MODEL (OBPM customer category = customer service model)'),
+        # lesson L11: tables / columns that do not exist in OBPM 14.7 (read from its entities)
+        (r'\bPMTMS?_NETWORK_CODES\b', 'PMTM_NETWORK (NETWORK_CODE, NETWORK_DESCRIPTION, per HOST_CODE); lesson L11'),
+        (r'\bSOURCE_DESC\b.*\bPMTMS?_SOURCE\b', 'PMTM_SOURCE column DESCRIPTION (no SOURCE_DESC), per HOST_CODE; lesson L11'),
     )
     for n, l in lovs.items():
         q = (l.findtext('LOV_QUERY') or '').upper()
         for pat, use in obpm_tables:
             if re.search(pat, q):
-                warns.append(f'LOV {n}: OBPM module {module} - FCUBS table in the query, use {use}')
+                warns.append(f'LOV {n}: OBPM module {module} - table/column not in OBPM, use {use}')
 
 # ---- screens
 mains = [n for n, s in screens.items() if s.findtext('MAIN_SCREEN') == 'Y']

@@ -147,6 +147,9 @@ user chooses. Copy the pattern of a similar shipped screen (for a customer-keyed
   category**). OBPM's customer category is the **Customer Service Model**: master `PMTM_CUST_SERVICE_MODEL`
   (CUSTOMER_SERVICE_MODEL, CUST_SERVICE_MODEL_DESC, HOST_CODE), linked per customer in
   `PMTMS_CUST_SERVICE_MODEL_LINK` (CUSTOMER_NO, HOST_CODE -> CUSTOMER_SERVICE_MODEL), screen PMDCSMLK.
+  Source codes `PMTM_SOURCE` (SOURCE_CODE, DESCRIPTION, HOST_CODE); networks `PMTM_NETWORK` (NETWORK_CODE,
+  NETWORK_DESCRIPTION, HOST_CODE). Read any other LOV table from the `@Table`/`@Column` names in PMEntities.jar, never
+  guess (lesson L11).
 - **Database access from Java:** the JTA data source named in PMEntities.jar `META-INF/persistence.xml` (unit
   `..._ENTITY_ID1`, usually `jdbc/fcjdevDS`). A connection from it inside the request's JTA transaction commits or
   rolls back with it. JDBC cannot read a PL/SQL BOOLEAN: give called functions a VARCHAR2 'Y'/'N' wrapper.

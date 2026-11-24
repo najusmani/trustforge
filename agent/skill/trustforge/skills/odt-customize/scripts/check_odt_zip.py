@@ -195,6 +195,20 @@ def main(argv):
         if z.getinfo(n).file_size == 0 and t != 'GWTM_OPERATIONS_MASTER_FG':
             warn('units', f'{n} is empty (0 bytes)')
 
+    # lesson L12: label codes used as menu / title text (labels missing when ODT generated)
+    fd = inc_text('SMTB_FUNCTION_DESCRIPTION')
+    if fd:
+        codes = sorted(set(re.findall(r"'([A-Za-z0-9]{8}_(?:Main_Menu|Sub_Menu_[12]|Desc))'", fd)))
+        if codes and new_function:
+            err('labels', f'SMTB_FUNCTION_DESCRIPTION has label codes as text ({", ".join(codes[:4])}): the screen title '
+                          'and menu show them. Maintain LBL_<FID>_MAIN_MENU/_SUB_MENU_1/_SUB_MENU_2/_DESC (Fetch Missing '
+                          'Labels) and generate again, or update the texts; lesson L12')
+        elif codes:
+            warn('labels', f'SMTB_FUNCTION_DESCRIPTION has label codes as text ({", ".join(codes[:4])}): do not run this '
+                           'INC on an existing function (INSERT only: it fails with ORA-00001 and changes nothing); lesson L12')
+        else:
+            ok('labels', 'menu and title texts resolved in SMTB_FUNCTION_DESCRIPTION')
+
     # ---- data sources
     ds_names = [txt(d, 'DATASRC_NAME').upper() or (d.get('ID') or '').upper() for d in m.findall('RAD_DATASOURCES')]
     ds_inc = inc_text('CSTB_FID_DATA_SOURCES').upper()
