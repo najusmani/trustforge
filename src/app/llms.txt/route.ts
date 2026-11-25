@@ -36,6 +36,7 @@ export function GET() {
     "",
     `- ${SITE.email}`,
     `- ${SITE.companyUrl}`,
+    `- ${SITE.linkedinUrl}`,
     "",
     "Oracle and FLEXCUBE are registered trademarks of Oracle and/or its affiliates. TrustForge is independent and not affiliated with or endorsed by Oracle.",
     "",

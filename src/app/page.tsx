@@ -144,6 +144,7 @@ export default async function Home() {
             name: SITE.companyLegal,
             alternateName: SITE.company,
             url: SITE.companyUrl,
+            sameAs: [SITE.linkedinUrl],
             email: SITE.email,
             address: { "@type": "PostalAddress", addressLocality: SITE.locality, addressRegion: SITE.region, addressCountry: SITE.country },
           },

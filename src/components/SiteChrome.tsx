@@ -32,6 +32,10 @@ export function SiteHeader() {
   );
 }
 
+function FooterExt({ href, children }: { href: string; children: React.ReactNode }) {
+  return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+}
+
 export function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -39,13 +43,16 @@ export function SiteFooter() {
         <div className="footer-brand">
           <span className="brand-name">TrustForge</span>
           <span>
-            AI for Oracle FLEXCUBE customization and ODT development. A product of{" "}
+            AI for <FooterExt href={SITE.oracleUrl}>Oracle</FooterExt> FLEXCUBE customization and ODT development, built on{" "}
+            <FooterExt href={SITE.anthropicUrl}>Anthropic</FooterExt>. A product of{" "}
             <a href={SITE.companyUrl}>{SITE.companyLegal}</a>, {SITE.locality}, {SITE.region}, Canada. ©{" "}
             {new Date().getFullYear()}.
           </span>
           <span className="footer-small">
-            Oracle and FLEXCUBE are registered trademarks of Oracle and/or its affiliates. TrustForge is not affiliated
-            with or endorsed by Oracle.
+            FLEXCUBE and Oracle Banking Payments are products of{" "}
+            <FooterExt href={SITE.oracleFsUrl}>Oracle Financial Services</FooterExt>. Oracle and FLEXCUBE are registered
+            trademarks of Oracle and/or its affiliates; Anthropic is a trademark of Anthropic, PBC. TrustForge is not
+            affiliated with or endorsed by Oracle or Anthropic.
           </span>
         </div>
         <div className="footer-cols">
@@ -63,12 +70,17 @@ export function SiteFooter() {
             <Link href="/#faq">Questions</Link>
             <Link href="/sign-in">Sign in</Link>
           </nav>
+          <nav aria-label="Company" className="footer-col">
+            <span className="footer-col-h">Company</span>
+            <a href={SITE.companyUrl}>{SITE.company}</a>
+            <a href={SITE.linkedinUrl} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href={`mailto:${SITE.email}`}>Contact</a>
+          </nav>
           <nav aria-label="Legal" className="footer-col">
             <span className="footer-col-h">Legal</span>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/refunds">Refunds</Link>
-            <a href={`mailto:${SITE.email}`}>Contact</a>
           </nav>
         </div>
       </div>

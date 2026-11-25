@@ -123,9 +123,10 @@ em.ember, .gold { font-style: italic; color: var(--gold-text); }
 .footer-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 28px; }
 .footer-brand { display: flex; flex-direction: column; gap: 10px; max-width: 540px; }
 .footer-brand .brand-name { color: var(--white); }
+.footer-brand a { text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.35); text-underline-offset: 3px; }
 .footer-small { font-size: 12px; line-height: 1.7; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 14px 30px; font-size: 12px; letter-spacing: 0.17em; text-transform: uppercase; }
-.footer-cols { display: flex; flex-wrap: wrap; gap: 40px 64px; }
+.footer-cols { display: flex; flex-wrap: wrap; gap: 40px 40px; }
 .footer-col { display: flex; flex-direction: column; gap: 10px; }
 .footer-col-h { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
 
