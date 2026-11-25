@@ -27,17 +27,17 @@ import { MORE_ARTICLES } from "@/lib/learn-more";
 const BASE_ARTICLES: Article[] = [
   {
     slug: "what-is-flexcube-odt",
-    title: "What is FLEXCUBE ODT? Oracle Development Workbench explained",
+    title: "What is FLEXCUBE ODT? The Open Development Tool explained",
     short: "What is FLEXCUBE ODT?",
     description:
       "A plain-English guide to ODT, the Oracle FLEXCUBE Development Workbench (RAD tool): what it generates, how release layers work, and the developer loop.",
-    keywords: ["FLEXCUBE ODT", "Oracle Development Workbench", "FLEXCUBE RAD tool", "FLEXCUBE development", "FCUBS ODT"],
+    keywords: ["FLEXCUBE ODT", "Open Development Tool", "FLEXCUBE Development Workbench", "FLEXCUBE RAD tool", "FLEXCUBE development", "FCUBS ODT"],
     published: PUBLISHED,
     updated: PUBLISHED,
     minutes: 6,
     body: `
 ## ODT in one paragraph
-ODT (Oracle Development Tool, also called the **Development Workbench** or the **RAD tool**) is how screens and their back-end code are built for Oracle FLEXCUBE Universal Banking (FCUBS). You design a function in ODT (its tables, blocks, fields, screens, lists of values and actions) and ODT saves that design as a **radxml** file. From the radxml it then **generates** most of the code the screen needs. Developers write only the business logic that the generator can’t know.
+ODT (Open Development Tool, also called the **Development Workbench** or the **RAD tool**) is how screens and their back-end code are built for Oracle FLEXCUBE Universal Banking (FCUBS). You design a function in ODT (its tables, blocks, fields, screens, lists of values and actions) and ODT saves that design as a **radxml** file. From the radxml it then **generates** most of the code the screen needs. Developers write only the business logic that the generator can’t know.
 
 ## What ODT generates for you
 From one radxml, ODT produces:
@@ -72,7 +72,7 @@ A function ID has 8 characters. The first two are the module (for example \`ST\`
 TrustForge knows these rules. You describe the change and upload your radxml or tables; it asks what it needs, agrees a plan, and produces a radxml that loads in ODT, plus CUSTOM hook code, release JavaScript and the steps to finish in ODT.
 `,
     faq: [
-      { q: "Is ODT the same as the FLEXCUBE RAD tool?", a: "Yes. ODT, the Oracle Development Workbench and the RAD tool are names for the same tool used to design and generate FLEXCUBE screens and their code." },
+      { q: "Is ODT the same as the FLEXCUBE RAD tool?", a: "Yes. ODT (Open Development Tool), the Development Workbench and the RAD tool are names for the same tool used to design and generate FLEXCUBE screens and their code." },
       { q: "What file does ODT save a screen design in?", a: "A radxml file named <FUNCTION_ID>_RAD.xml. It holds the whole design, with each element tagged by the release that created it." },
       { q: "Should I edit the generated MAIN package or SYS JavaScript?", a: "No. Change the radxml and regenerate. Put your own logic in the CUSTOM hook package and the CUSTOM release JavaScript." },
     ],
